@@ -14,7 +14,7 @@ export default function useProducts({
         params: { page, limit, sortBy, ascending },
       });
 
-      return response.data;
+     return response.data.response.data
     } catch (error) {
       console.error(error);
       throw error;

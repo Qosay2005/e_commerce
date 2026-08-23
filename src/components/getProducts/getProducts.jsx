@@ -1,186 +1,145 @@
-import React from 'react';
 import {
   Alert,
   Button,
   Card,
   CardContent,
   CardMedia,
-  Chip,
   CircularProgress,
   Rating,
   Typography,
-} from '@mui/material';
-import { ImageNotSupportedOutlined, Inventory2Outlined, ArrowForwardRounded } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
-import useProducts from '../../hocks/useProducts';
+} from "@mui/material";
+import {
+  ImageNotSupportedOutlined,
+} from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import useProducts from "../../hocks/useProducts";
 
 export default function GetProducts() {
-  const { data, isLoading, isError, error, refetch } = useProducts();
-
-  const products = Array.isArray(data?.response?.data)
-    ? data.response.data
-    : Array.isArray(data?.data)
-      ? data.data
-      : Array.isArray(data)
-        ? data
-        : [];
+  const { data: products, isLoading, isError, error, refetch } = useProducts();
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4">
-        <CircularProgress sx={{ color: '#DB4444' }} />
+      <div className="flex min-h-[60vh] items-center justify-center bg-white">
+        <CircularProgress sx={{ color: "#DB4444" }} />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="mx-auto max-w-7xl bg-white px-4 py-8 sm:px-6 lg:px-8">
         <Alert
           severity="error"
           action={
-            <Button color="inherit" size="small" onClick={() => refetch()}>
+            <Button color="inherit" size="small" onClick={refetch}>
               Retry
             </Button>
           }
         >
-          {error?.message || 'Unable to load products right now.'}
+          {error?.message || "Unable to load products right now."}
         </Alert>
       </div>
     );
   }
-
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+    <section className="bg-white">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-8">
           <div className="mb-3 flex items-center gap-3">
             <span className="h-7 w-4 rounded-[3px] bg-gradient-to-b from-[#FF6B6B] to-[#DB4444]" />
-            <Typography variant="subtitle2" className="font-bold uppercase tracking-[0.12em] text-[#DB4444]">
+
+            <Typography
+              variant="subtitle2"
+              className="font-bold uppercase tracking-[0.12em] text-[#DB4444]"
+            >
               Our Products
             </Typography>
           </div>
-          <Typography variant="h4" component="h2" className="text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-3xl">
+
+          <Typography
+            variant="h4"
+            component="h2"
+            className="text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-3xl"
+          >
             Featured Products
           </Typography>
-          <Typography variant="body2" className="mt-1 text-zinc-500">
-            Handpicked picks with modern design and great value.
-          </Typography>
         </div>
-      </div>
 
-      {products.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-12 text-center">
-          <Inventory2Outlined sx={{ fontSize: 34 }} className="text-zinc-300" />
-          <Typography variant="body1" className="font-medium text-zinc-500">
-            No products available right now.
-          </Typography>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {products.map((product, index) => {
-            const imageUrl = product?.image || product?.imageUrl || product?.thumbnail || product?.coverImage;
-            const categoryName = product?.category?.name || product?.categoryName || product?.category;
-            const productName = product?.name || product?.title || product?.productName;
-            const description = product?.description || product?.shortDescription || product?.summary;
-            const ratingValue = product?.rating || product?.averageRating;
-            const reviewsCount = product?.reviewsCount || product?.reviewCount || product?.ratingCount;
-            const priceValue = product?.price || product?.priceValue || product?.currentPrice || product?.amount;
-            const currency = product?.currency || product?.currencyCode || product?.currencySymbol;
+<div className="mx-auto flex max-w-7xl flex-wrap justify-start gap-3 px-4 sm:gap-4 md:justify-center md:gap-5">   {products.map((product) => {
+            const { id, name, price, rate, image } = product;
+            const productUrl = `/products/${id}`;
 
             return (
               <Card
-                key={product?.id || `${productName || 'product'}-${index}`}
+                key={id}
                 elevation={0}
-                className="group flex flex-col overflow-hidden rounded-[22px] border border-zinc-200/80 bg-white transition-all duration-300 ease-out hover:-translate-y-1 hover:border-transparent hover:shadow-[0_18px_40px_-14px_rgba(219,68,68,0.35)]"
+                className="group flex w-full max-w-[320px] flex-col overflow-hidden rounded-[30px] border border-gray-300 bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(219,68,78,0.30)]"
               >
-                <Link to={`/products/${product?.id}`} className="block no-underline">
+                <Link to={productUrl} className="block no-underline">
                   <div className="overflow-hidden bg-zinc-50">
-                    {imageUrl ? (
+                    {image ? (
                       <CardMedia
                         component="img"
-                        image={imageUrl}
-                        alt={productName || 'Product image'}
+                        image={image}
+                        alt={name}
                         loading="lazy"
-                        className="h-48 w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                        className="w-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     ) : (
                       <div className="flex h-48 flex-col items-center justify-center gap-2 bg-zinc-100 text-zinc-400">
                         <ImageNotSupportedOutlined sx={{ fontSize: 28 }} />
-                        <span className="text-xs font-medium">No image available</span>
+                        <span className="text-xs font-medium">
+                          No image available
+                        </span>
                       </div>
                     )}
                   </div>
                 </Link>
 
-                <CardContent className="flex flex-1 flex-col gap-2.5 p-5">
-                  <Link to={`/products/${product?.id}`} className="block no-underline">
-                    {categoryName ? (
-                      <Chip
-                        label={categoryName}
-                        size="small"
-                        variant="outlined"
-                        className="mb-1 w-fit"
-                        sx={{
-                          borderColor: '#DB4444',
-                          color: '#DB4444',
-                          fontWeight: 600,
-                          fontSize: '0.7rem',
-                          borderRadius: '8px',
-                        }}
-                      />
-                    ) : null}
-
-                    {productName ? (
-                      <Typography
-                        variant="h6"
-                        component="h3"
-                        className="font-bold leading-snug text-zinc-900 transition-colors duration-200 group-hover:text-[#DB4444]"
-                      >
-                        {productName}
-                      </Typography>
-                    ) : null}
-
-                    {description ? (
-                      <Typography variant="body2" className="line-clamp-2 text-zinc-500">
-                        {description}
-                      </Typography>
-                    ) : null}
-
-                    {ratingValue ? (
-                      <div className="mt-1 flex items-center gap-2">
-                        <Rating value={Number(ratingValue)} precision={0.1} readOnly size="small" />
-                        {reviewsCount ? (
-                          <span className="text-sm text-zinc-400">({reviewsCount})</span>
-                        ) : null}
-                      </div>
-                    ) : null}
-
-                    {priceValue != null ? (
-                      <Typography variant="h6" className="mt-1 font-extrabold text-zinc-900">
-                        {currency ? `${currency} ${priceValue}` : priceValue}
-                      </Typography>
-                    ) : null}
+                <CardContent className="flex flex-1 flex-col gap-3 p-5">
+                  <Link to={productUrl} className="no-underline">
+                    <Typography
+                      variant="h6"
+                      component="h3"
+                      className="font-bold leading-snug text-zinc-900 transition-colors duration-200 group-hover:text-[#DB4444]"
+                    >
+                      {name}
+                    </Typography>
                   </Link>
 
-                  {/* زر عرض التفاصيل */}
+                  <div className="flex items-center gap-2">
+                    <Rating
+                      value={rate}
+                      precision={0.5}
+                      readOnly
+                      size="small"
+                    />
+
+                    <span className="text-sm text-zinc-400">({rate})</span>
+                  </div>
+
+                  <Typography
+                    variant="h6"
+                    className="font-extrabold text-zinc-900"
+                  >
+                    ${price}
+                  </Typography>
+
                   <Button
                     component={Link}
-                    to={`/products/${product?.id}`}
+                    to={productUrl}
                     fullWidth
-                    endIcon={<ArrowForwardRounded sx={{ fontSize: 18 }} />}
                     sx={{
-                      mt: 1.5,
-                      borderRadius: '12px',
-                      textTransform: 'none',
+                      mt: "auto",
+                      borderRadius: "12px",
+                      textTransform: "none",
                       fontWeight: 700,
                       py: 1,
-                      color: '#DB4444',
-                      border: '1.5px solid #DB4444',
-                      transition: 'all .25s ease',
-                      '&:hover': {
-                        backgroundColor: '#DB4444',
-                        color: '#fff',
+                      color: "#DB4444",
+                      border: "1.5px solid #DB4444",
+                      "&:hover": {
+                        backgroundColor: "#DB4444",
+                        color: "#fff",
                       },
                     }}
                   >
@@ -191,7 +150,7 @@ export default function GetProducts() {
             );
           })}
         </div>
-      )}
+      </div>
     </section>
   );
 }
