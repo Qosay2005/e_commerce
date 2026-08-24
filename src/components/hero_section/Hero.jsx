@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { Button } from "@mui/material";
+import { Link } from "react-router-dom";
+
 import img_1 from "../../assets/hero_img1.webp";
 import img_2 from "../../assets/hero_img2.webp";
 import img_3 from "../../assets/hero_img3.webp";
-import {Button} from '@mui/material'
-import {Link} from 'react-router-dom'
+
 const slides = [img_1, img_2, img_3];
 
 export default function Hero() {
@@ -12,6 +14,7 @@ export default function Hero() {
     loop: true,
   });
 
+  // الانتقال التلقائي بين الصور
   useEffect(() => {
     if (!emblaApi) return;
 
@@ -23,30 +26,41 @@ export default function Hero() {
   }, [emblaApi]);
 
   return (
-    <section className="mx-auto w-full max-w-7xl overflow-hidden px-4 sm:px-6 lg:px-8 bg-[#FFFFFF]">
+    <section className="mx-auto w-full max-w-7xl overflow-hidden bg-white px-4 sm:px-6 lg:px-8">
       <div ref={emblaRef}>
         <div className="flex">
           {slides.map((image, index) => (
-            <div key={index} className="min-w-0 flex-[0_0_100%] px-1 relative">
+            <div
+              key={index}
+              className="relative min-w-0 flex-[0_0_100%] px-1"
+            >
+              {/* الصورة */}
               <img
                 src={image}
                 alt={`Hero slide ${index + 1}`}
                 className="h-48 w-full rounded-xl object-cover sm:h-64 md:h-80 lg:h-[420px] xl:h-[480px]"
               />
-               
-              <Button variant="contained" component={Link}
-              to='/shop'
-              sx = {{
-                position:"absolute",
-                bottom:100,
-                left:50,
-                
-              }}
+
+              {/* طبقة شفافة فوق الصورة لتحسين وضوح الزر */}
+              <div className="absolute inset-0 rounded-xl bg-black/20" />
+
+              {/* زر Shop Now */}
+              <Button
+                variant="contained"
+                component={Link}
+                to="/shop"
+                className="
+                  !absolute !z-10
+                  !bottom-4 sm:!bottom-8 md:!bottom-12 lg:!bottom-20
+                  !left-1/2 !-translate-x-1/2
+                  !rounded-lg
+                  !px-4 sm:!px-6 md:!px-8
+                  !py-2 sm:!py-3
+                  !text-sm sm:!text-base
+                "
               >
-                shop now
+                Shop Now
               </Button>
-              
-           
             </div>
           ))}
         </div>
