@@ -41,6 +41,9 @@ export default function GetProducts() {
       </div>
     );
   }
+
+
+
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -65,10 +68,11 @@ export default function GetProducts() {
           </Typography>
         </div>
 
-<div className="mx-auto flex max-w-7xl flex-wrap justify-start gap-3 px-4 sm:gap-4 md:justify-center md:gap-5">   {products.map((product) => {
+<div className="mx-auto flex max-w-7xl flex-wrap justify-start gap-3 px-4 sm:gap-4 md:justify-center md:gap-5">   {
+products.map((product) => {
             const { id, name, price, rate, image } = product;
             const productUrl = `/products/${id}`;
-
+             
             return (
               <Card
                 key={id}
