@@ -43,13 +43,13 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-[#091E27]">
-            Hexora Tech
+            Exclusive
           </h3>
 
           <p className="text-sm leading-6 text-slate-600">
-            Modern learning, premium products, and a seamless shopping
-            experience for every learner.
+           Eng Qosay Raid Qlalwhe
           </p>
+            
         </div>
 
         <div className="space-y-3">
@@ -102,9 +102,7 @@ export default function Footer() {
             ))}
           </div>
 
-          <p className="text-sm text-slate-500">
-            © 2026 Exclusive. All rights reserved.
-          </p>
+        
         </div>
       </div>
     </footer>

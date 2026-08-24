@@ -3,7 +3,7 @@ import { Alert, Button, Card, CardContent, CircularProgress, Chip, Rating, Typog
 import { Link } from 'react-router-dom';
 import useProducts from '../../hocks/useProducts';
 import Filter from '../../components/shop/Filter';
-
+import PageTransition from '../../PageTransition'
 export default function Shop() {
   const { data, isLoading, isError, error, refetch } = useProducts();
   const [filters, setFilters] = useState({ category: 'all', maxPrice: 500, minRating: 0 });
@@ -45,6 +45,7 @@ export default function Shop() {
   }
 
   return (
+    <PageTransition>
     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
         <Typography variant="h4" className="font-semibold text-slate-800">Shop</Typography>
@@ -83,5 +84,6 @@ export default function Shop() {
         </div>
       </div>
     </section>
+    </PageTransition>
   );
 }

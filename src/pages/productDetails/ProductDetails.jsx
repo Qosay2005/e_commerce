@@ -16,11 +16,10 @@ import {
   ArrowBackRounded,
   ImageNotSupportedOutlined,
 } from "@mui/icons-material";
-
 import useProduct from "../../hocks/useProduct";
 import useAddToCart from "../../hocks/useAddToCart";
 import useAddReview from "../../hocks/useAddReview";
-
+import PageTransition from '../../PageTransition'
 const PRIMARY_COLOR = "#DB4444";
 const PRIMARY_HOVER = "#C53636";
 
@@ -134,6 +133,7 @@ export default function ProductDetails() {
   }
 
   return (
+    <PageTransition>
     <main className="min-h-screen bg-white">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -507,5 +507,6 @@ export default function ProductDetails() {
         </Alert>
       </Snackbar>
     </main>
+    </PageTransition>
   );
 }
