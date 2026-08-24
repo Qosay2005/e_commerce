@@ -10,10 +10,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 
-import {
-  Email,
-  Lock,
-} from "@mui/icons-material";
+import { Email, Lock } from "@mui/icons-material";
 
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -71,18 +68,13 @@ export default function Login() {
     try {
       setServerErrors([]);
 
-      const response = await axiosInstance.post(
-        "/auth/Account/Login",
-        data
-      );
+      const response = await axiosInstance.post("/auth/Account/Login", data);
 
       setToken(response.data.accessToken);
 
       navigate(redirectPath, { replace: true });
     } catch (error) {
-      setServerErrors(
-        error.response?.data?.errors || ["Login failed"]
-      );
+      setServerErrors(error.response?.data?.errors || ["Login failed"]);
     }
   };
 
@@ -134,9 +126,7 @@ export default function Login() {
                   mb: 1,
                 }}
               >
-                {typeof error === "string"
-                  ? error
-                  : JSON.stringify(error)}
+                {typeof error === "string" ? error : JSON.stringify(error)}
               </Typography>
             ))}
 
@@ -235,23 +225,16 @@ export default function Login() {
                 sx={{
                   minHeight: 40,
                   borderRadius: 2,
-                  backgroundColor: "#091E27",
+                  backgroundColor: "#DB4444",
                   color: "#ffffff",
                   textTransform: "none",
                   fontWeight: 700,
                   boxShadow: "none",
-
-                  "&:hover": {
-                    backgroundColor: "#0f2d3a",
-                  },
                 }}
               >
                 {isSubmitting ? (
                   <Box className="flex items-center gap-2">
-                    <CircularProgress
-                      size={16}
-                      sx={{ color: "#ffffff" }}
-                    />
+                    <CircularProgress size={16} sx={{ color: "#ffffff" }} />
                     <span>{t("status.loading")}</span>
                   </Box>
                 ) : (
@@ -260,32 +243,48 @@ export default function Login() {
               </Button>
             </Box>
 
-            <Box className="mt-4 text-center">
+            <Box className="mt-4 flex flex-wrap items-center justify-center gap-3 text-center">
               <Typography
                 sx={{
                   color: secondaryTextColor,
                   fontSize: "0.72rem",
                 }}
               >
-                {t("auth.login.noAccount")}{" "}
-                <Box
-                  component="span"
-                  sx={{
-                    color: textColor,
-                    fontWeight: 700,
-                  }}
-                >
-                  <Link
-                    to="/register"
-                    style={{
-                      color: textColor,
-                      textDecoration: "none",
-                    }}
-                  >
-                    {t("auth.login.registerLink")}
-                  </Link>
-                </Box>
+                {t("auth.login.noAccount")}
               </Typography>
+
+              <Link
+                to="/register"
+                style={{
+                  color: textColor,
+                  textDecoration: "none",
+                  fontWeight: 700,
+                  fontSize: "0.72rem",
+                }}
+                className="transition-opacity duration-200 hover:opacity-70"
+              >
+                {t("auth.login.registerLink")}
+              </Link>
+
+              <span
+                className="hidden h-4 w-px sm:block"
+                style={{
+                  backgroundColor: isDark ? "#475569" : "#cbd5e1",
+                }}
+              />
+
+              <Link
+                to="/forgot-password"
+                style={{
+                  color: textColor,
+                  textDecoration: "none",
+                  fontWeight: 700,
+                  fontSize: "0.72rem",
+                }}
+                className="transition-opacity duration-200 hover:opacity-70"
+              >
+                {t("auth.login.forgotPassword")}
+              </Link>
             </Box>
           </Box>
         </Box>
