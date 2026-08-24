@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   Alert,
   Button,
@@ -7,539 +7,505 @@ import {
   CircularProgress,
   Divider,
   Rating,
-  Typography,
-  TextField,
   Snackbar,
-} from '@mui/material';
+  TextField,
+  Typography,
+} from "@mui/material";
 import {
+  AddShoppingCartRounded,
   ArrowBackRounded,
   ImageNotSupportedOutlined,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 
-import useProduct from '../../hocks/useProduct';
-import useAddToCart from '../../hocks/useAddToCart';
-import useGetReviews from '../../hocks/useGetReviews';
-import useAddReview from '../../hocks/useAddReview';
+import useProduct from "../../hocks/useProduct";
+import useAddToCart from "../../hocks/useAddToCart";
+import useAddReview from "../../hocks/useAddReview";
+
+const PRIMARY_COLOR = "#DB4444";
+const PRIMARY_HOVER = "#C53636";
 
 export default function ProductDetails() {
   const { id } = useParams();
 
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    comment: "",
+  });
+
+  const [isCartAlertOpen, setIsCartAlertOpen] = useState(false);
+
   const { data, isLoading, isError, error, refetch } = useProduct(id);
 
-  const { mutate, isPending: isAddingToCart } = useAddToCart();
-
-  const {
-    data: reviewsData,
-    isLoading: reviewsLoading,
-    isError: reviewsError,
-  } = useGetReviews(id);
+  const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
 
   const addReviewMutation = useAddReview(id);
 
-  const [reviewForm, setReviewForm] = useState({
-    rating: 5,
-    comment: '',
-  });
+  const product = data?.response || data?.data || data;
 
-  // Alert الخاص بإضافة المنتج للسلة
-  const [openCartAlert, setOpenCartAlert] = useState(false);
+  const {
+    image,
+    subImages = [],
+    name,
+    description,
+    rate = 0,
+    price,
+    reviews = [],
+  } = product || {};
 
-  const product =
-    data?.response ||
-    data?.data ||
-    data ||
-    null;
-
-  const imageUrl =
-    product?.image ||
-    product?.imageUrl ||
-    product?.thumbnail ||
-    product?.coverImage;
-
-  const categoryName =
-    product?.category?.name ||
-    product?.categoryName ||
-    product?.category;
-
-  const productName =
-    product?.name ||
-    product?.title ||
-    product?.productName;
-
-  const description =
-    product?.description ||
-    product?.shortDescription ||
-    product?.summary;
-
-  const ratingValue =
-    product?.rate ||
-    product?.rating ||
-    product?.averageRating;
-
-  const reviewsCount =
-    product?.reviews?.length ||
-    product?.reviewsCount ||
-    product?.reviewCount ||
-    product?.ratingCount;
-
-  const priceValue =
-    product?.price ||
-    product?.priceValue ||
-    product?.currentPrice ||
-    product?.amount;
-
-  const currency =
-    product?.currency ||
-    product?.currencyCode ||
-    product?.currencySymbol;
-
-  const reviews = Array.isArray(reviewsData?.response?.data)
-    ? reviewsData.response.data
-    : Array.isArray(reviewsData?.response)
-      ? reviewsData.response
-      : Array.isArray(reviewsData?.data)
-        ? reviewsData.data
-        : Array.isArray(reviewsData)
-          ? reviewsData
-          : [];
-
-  // إضافة المنتج للسلة بكمية 1 — الكمية تتعدل لاحقًا من صفحة السلة
   const handleAddToCart = () => {
-    mutate(
+    addToCart(
       {
         ProductId: id,
         Count: 1,
       },
       {
         onSuccess: () => {
-          setOpenCartAlert(true);
+          setIsCartAlertOpen(true);
         },
-      }
+      },
     );
   };
 
-  // إغلاق Alert
-  const handleCloseCartAlert = () => {
-    setOpenCartAlert(false);
+  const handleReviewChange = (field, value) => {
+    setReviewForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmitReview = () => {
+    const comment = reviewForm.comment.trim();
+
+    if (!comment) return;
+
+    addReviewMutation.mutate(
+      {
+        rating: reviewForm.rating,
+        comment,
+      },
+      {
+        onSuccess: () => {
+          setReviewForm({
+            rating: 5,
+            comment: "",
+          });
+
+          refetch();
+        },
+      },
+    );
   };
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <CircularProgress sx={{ color: '#DB4444' }} />
-      </div>
+      <main className="flex min-h-screen items-center justify-center bg-white">
+        <CircularProgress size={32} sx={{ color: PRIMARY_COLOR }} />
+      </main>
     );
   }
 
   if (isError) {
-    console.error('product details error', error);
-
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <Alert
-          severity="error"
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => refetch()}
-            >
-              Retry
-            </Button>
-          }
-        >
-          {error?.message || 'Unable to load product details.'}
-        </Alert>
-      </div>
+      <main className="min-h-screen bg-white px-4 py-10">
+        <div className="mx-auto max-w-7xl">
+          <Alert
+            severity="error"
+            action={
+              <Button color="inherit" size="small" onClick={refetch}>
+                Retry
+              </Button>
+            }
+          >
+            {error?.message || "Unable to load product details."}
+          </Alert>
+        </div>
+      </main>
     );
   }
 
   if (!product) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <Alert severity="info">
-          Product not found.
-        </Alert>
-      </div>
+      <main className="min-h-screen bg-white px-4 py-10">
+        <div className="mx-auto max-w-7xl">
+          <Alert severity="info">Product not found.</Alert>
+        </div>
+      </main>
     );
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-white">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <Typography
+            variant="h4"
+            component="h1"
+            className="text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-3xl"
+          >
+            Product Details
+          </Typography>
 
-      {/* Back Button */}
-      <Link
-        to="/"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-500 no-underline transition-colors hover:text-[#DB4444]"
-      >
-        <ArrowBackRounded sx={{ fontSize: 18 }} />
-        الرجوع للصفحة الرئيسية
-      </Link>
+          <Button
+            component={Link}
+            to="/"
+            variant="outlined"
+            startIcon={<ArrowBackRounded />}
+            className="w-fit rounded-xl"
+            sx={{
+              color: PRIMARY_COLOR,
+              borderColor: PRIMARY_COLOR,
+              fontWeight: 700,
+              textTransform: "none",
+              "&:hover": {
+                color: "#fff",
+                backgroundColor: PRIMARY_COLOR,
+                borderColor: PRIMARY_COLOR,
+              },
+            }}
+          >
+            الرجوع للرئيسية
+          </Button>
+        </header>
 
-      {/* Product Details */}
-      <div className="overflow-hidden rounded-[26px] border border-zinc-200/80 bg-white shadow-[0_18px_40px_-20px_rgba(0,0,0,0.15)] lg:grid lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-[0_15px_40px_-20px_rgba(0,0,0,0.18)]">
+          <div className="grid lg:grid-cols-2">
+            <div className="flex min-h-[320px] items-center justify-center bg-zinc-50 p-6 sm:min-h-[450px] sm:p-10 lg:min-h-[560px]">
+              {image ? (
+                <img
+                  src={image}
+                  alt={name || "Product"}
+                  loading="lazy"
+                  className="max-h-[520px] w-full object-contain transition-transform duration-500 hover:scale-105"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-3 text-zinc-400">
+                  <ImageNotSupportedOutlined sx={{ fontSize: 40 }} />
 
-        {/* Product Image */}
-        <div className="relative overflow-hidden bg-zinc-50">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={productName || 'Product'}
-              className="h-full min-h-[360px] w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full min-h-[360px] flex-col items-center justify-center gap-2 text-zinc-400">
-              <ImageNotSupportedOutlined sx={{ fontSize: 32 }} />
-              <span className="text-sm font-medium">
-                No image available
+                  <Typography variant="body2" className="font-medium">
+                    No image available
+                  </Typography>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
+              <div>
+                <Chip
+                  label="Product"
+                  size="small"
+                  variant="outlined"
+                  className="mb-4 rounded-lg"
+                  sx={{
+                    color: PRIMARY_COLOR,
+                    borderColor: PRIMARY_COLOR,
+                    fontWeight: 600,
+                  }}
+                />
+
+                <Typography
+                  variant="h4"
+                  component="h2"
+                  className="mb-5 text-2xl font-extrabold leading-tight text-zinc-900 sm:text-3xl"
+                >
+                  {name}
+                </Typography>
+
+                <div className="mb-5 flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Rating
+                      value={Number(rate)}
+                      precision={0.5}
+                      readOnly
+                      size="medium"
+                      sx={{
+                        color: PRIMARY_COLOR,
+                      }}
+                    />
+
+                    <Typography
+                      variant="body2"
+                      className="font-semibold text-zinc-500"
+                    >
+                      {rate} / 5
+                    </Typography>
+                  </div>
+
+                  <Divider
+                    orientation="vertical"
+                    flexItem
+                    className="hidden sm:block"
+                  />
+
+                  <Typography
+                    variant="h5"
+                    className="font-extrabold"
+                    sx={{
+                      color: PRIMARY_COLOR,
+                    }}
+                  >
+                    ${price}
+                  </Typography>
+                </div>
+
+                <Divider className="mb-6" />
+
+                {description && (
+                  <Typography
+                    variant="body1"
+                    className="whitespace-pre-line text-sm leading-7 text-zinc-600 sm:text-base"
+                  >
+                    {description}
+                  </Typography>
+                )}
+
+                {subImages.length > 0 && (
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    {subImages.map((subImage, index) => (
+                      <img
+                        key={index}
+                        src={subImage}
+                        alt={`${name}-${index + 1}`}
+                        loading="lazy"
+                        className="h-16 w-16 rounded-xl border border-zinc-200 bg-zinc-50 object-contain p-1 transition hover:border-[#DB4444]"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleAddToCart}
+                  disabled={isAddingToCart}
+                  startIcon={!isAddingToCart && <AddShoppingCartRounded />}
+                  className="min-h-12 rounded-xl font-bold normal-case shadow-none"
+                  sx={{
+                    backgroundColor: PRIMARY_COLOR,
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: PRIMARY_HOVER,
+                      boxShadow: "none",
+                    },
+                    "&:disabled": {
+                      backgroundColor: "#e8a0a0",
+                      color: "#fff",
+                    },
+                  }}
+                >
+                  {isAddingToCart ? (
+                    <CircularProgress size={22} sx={{ color: "#fff" }} />
+                  ) : (
+                    "ADD TO CART"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm sm:p-8">
+          <div className="mb-8">
+            <div className="flex flex-wrap items-center gap-3">
+              <Typography
+                variant="h5"
+                component="h2"
+                className="font-extrabold text-zinc-900"
+              >
+                المراجعات
+              </Typography>
+
+              <span className="rounded-full bg-red-50 px-3 py-1 text-sm font-bold text-[#DB4444]">
+                {reviews.length}
               </span>
             </div>
-          )}
-        </div>
-
-        {/* Product Information */}
-        <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
-
-          <div>
-
-            {/* Category */}
-            {categoryName ? (
-              <Chip
-                label={categoryName}
-                size="small"
-                variant="outlined"
-                className="mb-4 w-fit"
-                sx={{
-                  borderColor: '#DB4444',
-                  color: '#DB4444',
-                  fontWeight: 600,
-                  fontSize: '0.72rem',
-                  borderRadius: '8px',
-                }}
-              />
-            ) : null}
-
-            {/* Product Name */}
-            {productName ? (
-              <Typography
-                variant="h4"
-                component="h1"
-                className="mb-3 font-extrabold tracking-tight text-zinc-900"
-              >
-                {productName}
-              </Typography>
-            ) : null}
-
-            {/* Rating + Price */}
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-
-              {ratingValue ? (
-                <div className="flex items-center gap-2">
-                  <Rating
-                    value={Number(ratingValue)}
-                    precision={0.1}
-                    readOnly
-                    sx={{ color: '#DB4444' }}
-                  />
-
-                  {reviewsCount ? (
-                    <span className="text-sm text-zinc-400">
-                      ({reviewsCount})
-                    </span>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {priceValue != null ? (
-                <Typography
-                  variant="h5"
-                  className="font-extrabold text-zinc-900"
-                >
-                  {currency
-                    ? `${currency} ${priceValue}`
-                    : priceValue}
-                </Typography>
-              ) : null}
-
-            </div>
-
-            <Divider className="mb-4" />
-
-            {/* Description */}
-            {description ? (
-              <Typography
-                variant="body1"
-                className="leading-7 text-zinc-500"
-              >
-                {description}
-              </Typography>
-            ) : null}
-
-          </div>
-
-          {/* Add To Cart */}
-          <div className="mt-6 rounded-[20px] border border-zinc-200/80 bg-zinc-50 p-4">
-            <Button
-              variant="contained"
-              onClick={handleAddToCart}
-              disabled={isAddingToCart}
-              fullWidth
-              sx={{
-                minHeight: 44,
-                borderRadius: '12px',
-                backgroundColor: '#DB4444',
-                color: '#ffffff',
-                textTransform: 'none',
-                fontWeight: 700,
-                boxShadow: 'none',
-
-                '&:hover': {
-                  backgroundColor: '#c23a3a',
-                  boxShadow: 'none',
-                },
-              }}
-            >
-              {isAddingToCart ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                'أضف للسلة'
-              )}
-            </Button>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Reviews */}
-      <div className="mt-8 rounded-[26px] border border-zinc-200/80 bg-white p-6 shadow-sm sm:p-8">
-
-        <Typography
-          variant="h5"
-          className="mb-4 font-extrabold text-zinc-900"
-        >
-          المراجعات
-        </Typography>
-
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-
-          {/* Reviews List */}
-          <div className="space-y-3">
-
-            {reviewsLoading ? (
-              <CircularProgress
-                size={24}
-                sx={{ color: '#DB4444' }}
-              />
-            ) : null}
-
-            {reviewsError ? (
-              <Alert severity="error">
-                Unable to load reviews.
-              </Alert>
-            ) : null}
-
-            {reviews.length === 0 && !reviewsLoading ? (
-              <Typography
-                variant="body2"
-                className="text-zinc-500"
-              >
-                لا توجد مراجعات بعد. كن أول من يضيف مراجعة.
-              </Typography>
-            ) : null}
-
-            {reviews.map((review, index) => (
-              <div
-                key={review?.id || index}
-                className="rounded-[16px] border border-zinc-200/80 bg-zinc-50 p-4"
-              >
-
-                <div className="mb-2 flex items-center gap-2">
-
-                  <Rating
-                    value={Number(review?.rating || 0)}
-                    readOnly
-                    size="small"
-                    sx={{ color: '#DB4444' }}
-                  />
-
-                  <Typography
-                    variant="body2"
-                    className="text-zinc-500"
-                  >
-                    {review?.userName || 'User'}
-                  </Typography>
-
-                </div>
-
-                <Typography
-                  variant="body2"
-                  className="text-zinc-600"
-                >
-                  {review?.comment ||
-                    review?.message ||
-                    'No comment provided.'}
-                </Typography>
-
-              </div>
-            ))}
-
-          </div>
-
-          {/* Add Review */}
-          <div className="rounded-[20px] border border-zinc-200/80 bg-zinc-50 p-4">
 
             <Typography
-              variant="h6"
-              className="mb-3 font-bold text-zinc-900"
+              variant="body2"
+              className="mt-1 font-semibold text-zinc-500"
             >
-              أضف مراجعتك
+              آراء العملاء وتجاربهم مع المنتج
             </Typography>
-
-            <div className="space-y-3">
-
-              {/* Rating */}
-              <div>
-
-                <Typography
-                  variant="body2"
-                  className="mb-1.5 font-semibold text-zinc-700"
-                >
-                  التقييم
-                </Typography>
-
-                <div className="flex items-center gap-2">
-
-                  <Rating
-                    value={reviewForm.rating}
-                    onChange={(event, newValue) => {
-
-                      if (newValue !== null) {
-                        setReviewForm({
-                          ...reviewForm,
-                          rating: newValue,
-                        });
-                      }
-
-                    }}
-                    size="large"
-                    sx={{
-                      color: '#DB4444',
-
-                      '& .MuiRating-iconEmpty': {
-                        color: '#DB4444',
-                        opacity: 0.35,
-                      },
-                    }}
-                  />
-
-                  <Typography
-                    variant="body2"
-                    className="font-medium text-zinc-500"
-                  >
-                    {reviewForm.rating} / 5
-                  </Typography>
-
-                </div>
-
-              </div>
-
-              {/* Comment */}
-              <TextField
-                label="Comment"
-                multiline
-                minRows={4}
-                value={reviewForm.comment}
-                onChange={(event) => {
-                  setReviewForm({
-                    ...reviewForm,
-                    comment: event.target.value,
-                  });
-                }}
-                fullWidth
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '10px',
-                    backgroundColor: '#fff',
-                  },
-                }}
-              />
-
-              {/* Submit Review */}
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={() =>
-                  addReviewMutation.mutate({
-                    rating: reviewForm.rating,
-                    comment: reviewForm.comment,
-                  })
-                }
-                disabled={addReviewMutation.isPending}
-                sx={{
-                  borderRadius: '12px',
-                  backgroundColor: '#DB4444',
-                  textTransform: 'none',
-                  fontWeight: 700,
-                  boxShadow: 'none',
-
-                  '&:hover': {
-                    backgroundColor: '#c23a3a',
-                  },
-                }}
-              >
-                {addReviewMutation.isPending ? (
-                  <CircularProgress
-                    size={20}
-                    color="inherit"
-                  />
-                ) : (
-                  'إرسال المراجعة'
-                )}
-              </Button>
-
-              {/* Review Error */}
-              {addReviewMutation.isError ? (
-                <Alert severity="error">
-                  {addReviewMutation.error?.message ||
-                    'Unable to submit review.'}
-                </Alert>
-              ) : null}
-
-              {/* Review Success */}
-              {addReviewMutation.isSuccess ? (
-                <Alert severity="success">
-                  تم إرسال المراجعة بنجاح.
-                </Alert>
-              ) : null}
-
-            </div>
           </div>
 
-        </div>
+          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="min-w-0">
+              {reviews.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center">
+                  <Typography
+                    variant="body1"
+                    className="font-semibold text-zinc-500"
+                  >
+                    لا توجد مراجعات بعد.
+                  </Typography>
+
+                  <Typography variant="body2" className="mt-1 text-zinc-400">
+                    كن أول من يضيف مراجعة لهذا المنتج.
+                  </Typography>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((review, index) => (
+                    <article
+                      key={review?.id || index}
+                      className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 transition-shadow duration-300 hover:shadow-sm sm:p-5"
+                    >
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                        <Typography
+                          variant="body1"
+                          className="font-bold text-zinc-800"
+                        >
+                          {review?.userName || "User"}
+                        </Typography>
+
+                        <Rating
+                          value={Number(review?.rating || 0)}
+                          readOnly
+                          size="small"
+                          sx={{
+                            color: PRIMARY_COLOR,
+                          }}
+                        />
+                      </div>
+
+                      <Typography
+                        variant="body2"
+                        className="whitespace-pre-line leading-6 text-zinc-600"
+                      >
+                        {review?.comment || "No comment provided."}
+                      </Typography>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="h-fit rounded-2xl border border-zinc-200 bg-zinc-50 p-5 sm:p-6 lg:sticky lg:top-6">
+              <Typography
+                variant="h6"
+                className="mb-5 font-extrabold text-zinc-900"
+              >
+                أضف مراجعتك
+              </Typography>
+
+              <div className="space-y-5">
+                <div>
+                  <Typography
+                    variant="body2"
+                    className="mb-2 font-semibold text-zinc-700"
+                  >
+                    التقييم
+                  </Typography>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Rating
+                      value={reviewForm.rating}
+                      onChange={(event, value) => {
+                        if (value !== null) {
+                          handleReviewChange("rating", value);
+                        }
+                      }}
+                      size="large"
+                      sx={{
+                        color: PRIMARY_COLOR,
+                      }}
+                    />
+
+                    <Typography
+                      variant="body2"
+                      className="font-semibold text-zinc-500"
+                    >
+                      {reviewForm.rating} / 5
+                    </Typography>
+                  </div>
+                </div>
+
+                <TextField
+                  label="Comment"
+                  multiline
+                  minRows={5}
+                  value={reviewForm.comment}
+                  onChange={(event) =>
+                    handleReviewChange("comment", event.target.value)
+                  }
+                  fullWidth
+                  placeholder="اكتب تجربتك مع المنتج..."
+                  helperText={`${reviewForm.comment.length} characters`}
+                  className="bg-white"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "14px",
+                    },
+                    "& .MuiOutlinedInput-root:hover fieldset": {
+                      borderColor: PRIMARY_COLOR,
+                    },
+                    "& .MuiOutlinedInput-root.Mui-focused fieldset": {
+                      borderColor: PRIMARY_COLOR,
+                    },
+                  }}
+                />
+
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleSubmitReview}
+                  disabled={
+                    addReviewMutation.isPending || !reviewForm.comment.trim()
+                  }
+                  className="min-h-12 rounded-xl font-bold normal-case shadow-none"
+                  sx={{
+                    backgroundColor: PRIMARY_COLOR,
+                    "&:hover": {
+                      backgroundColor: PRIMARY_HOVER,
+                    },
+                    "&:disabled": {
+                      backgroundColor: "#e8a0a0",
+                      color: "#fff",
+                    },
+                  }}
+                >
+                  {addReviewMutation.isPending ? (
+                    <CircularProgress size={21} sx={{ color: "#fff" }} />
+                  ) : (
+                    "إرسال المراجعة"
+                  )}
+                </Button>
+
+                {addReviewMutation.isError && (
+                  <Alert severity="error">
+                    {addReviewMutation.error?.message ||
+                      "Unable to submit review."}
+                  </Alert>
+                )}
+
+                {addReviewMutation.isSuccess && (
+                  <Alert severity="success">تم إرسال المراجعة بنجاح.</Alert>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
-      {/* Add To Cart Success Alert */}
       <Snackbar
-        open={openCartAlert}
+        open={isCartAlertOpen}
         autoHideDuration={3000}
-        onClose={handleCloseCartAlert}
+        onClose={() => setIsCartAlertOpen(false)}
         anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
+          vertical: "top",
+          horizontal: "center",
         }}
       >
         <Alert
-          onClose={handleCloseCartAlert}
+          onClose={() => setIsCartAlertOpen(false)}
           severity="success"
           variant="filled"
-          sx={{
-            width: '100%',
-          }}
+          className="w-full"
         >
           تم إضافة المنتج إلى السلة بنجاح
         </Alert>
       </Snackbar>
-
-    </section>
+    </main>
   );
 }
