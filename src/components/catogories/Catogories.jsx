@@ -1,26 +1,30 @@
-import React, { useRef } from 'react'
+import React, { useRef } from "react";
+
 import {
   Alert,
   Button,
   Card,
   CircularProgress,
   Typography,
-} from '@mui/material'
-import { CategoryOutlined } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
+} from "@mui/material";
 
-import useCatogories from '../../hocks/useCatogories'
+import { CategoryOutlined } from "@mui/icons-material";
+
+import { Link } from "react-router-dom";
+
+import useCatogories from "../../hocks/useCatogories";
 
 export default function Catogories() {
-  const { data, isLoading, isError, error, refetch } = useCatogories()
-  const scrollRef = useRef(null)
+  const { data, isLoading, isError, error, refetch } = useCatogories();
+
+  const scrollRef = useRef(null);
 
   if (isLoading) {
     return (
       <div className="flex justify-center py-6">
-        <CircularProgress sx={{ color: '#DB4444' }} />
+        <CircularProgress sx={{ color: "#DB4444" }} />
       </div>
-    )
+    );
   }
 
   if (isError) {
@@ -29,27 +33,24 @@ export default function Catogories() {
         <Alert
           severity="error"
           action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={refetch}
-            >
+            <Button color="inherit" size="small" onClick={refetch}>
               Retry
             </Button>
           }
         >
-          {error?.message || 'Unable to load categories.'}
+          {error?.message || "Unable to load categories."}
         </Alert>
       </div>
-    )
+    );
   }
 
   const scrollByAmount = (amount) => {
     scrollRef.current?.scrollBy({
       left: amount,
-      behavior: 'smooth',
-    })
-  }
+
+      behavior: "smooth",
+    });
+  };
 
   return (
     <section className="mx-auto max-w-7xl bg-white px-4 py-10 sm:px-6 lg:px-8">
@@ -75,8 +76,8 @@ export default function Catogories() {
 
       <div
         ref={scrollRef}
-        className="flex gap-5 overflow-x-auto scroll-smooth pb-4"
-        style={{ scrollbarWidth: 'none' }}
+        className="flex gap-5 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 overflow-x-auto scroll-smooth pb-4 "
+        style={{ scrollbarWidth: "none" }}
       >
         {data.map((category) => (
           <Card
@@ -84,7 +85,7 @@ export default function Catogories() {
             component={Link}
             to="/shop"
             elevation={0}
-            className="group flex min-w-[136px] flex-1 basis-[136px] flex-col items-center justify-center gap-4 rounded-2xl border border-zinc-200 bg-white py-8 no-underline shadow-lg transition-all duration-400 ease-out hover:-translate-y-1 hover:border-transparent hover:shadow-[0_12px_30px_-8px_rgba(219,68,68,0.45)] sm:min-w-[156px]"
+            className="group flex  min-w-[136px] flex-1 basis-[136px] flex-col items-center justify-center gap-4 rounded-2xl border border-zinc-200 bg-white py-8 no-underline shadow-lg transition-all duration-400 ease-out   hover:shadow-[0_12px_30px_-8px_rgba(219,68,68,0.45)] sm:min-w-[156px]"
           >
             <span className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 transition-all duration-400 ease-out group-hover:scale-105 group-hover:bg-[#DB4444]">
               {category.image ? (
@@ -111,5 +112,5 @@ export default function Catogories() {
         ))}
       </div>
     </section>
-  )
+  );
 }
