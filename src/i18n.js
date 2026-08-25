@@ -1,12 +1,12 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-const savedLanguage = typeof window !== 'undefined' ? localStorage.getItem('appLang') : null;
+const savedLanguage =
+  typeof window !== 'undefined' ? localStorage.getItem('appLang') : null;
 
 const resources = {
   en: {
     translation: {
-      // Navbar & Header
       navbar: {
         home: 'Home',
         shop: 'Shop',
@@ -16,10 +16,9 @@ const resources = {
         logout: 'Logout',
         register: 'Register',
         search: 'What are you looking for?',
-        contact:"Contact"
+        contact: 'Contact',
       },
 
-      // Authentication - Login
       auth: {
         login: {
           title: 'Welcome back',
@@ -37,6 +36,7 @@ const resources = {
             loginFailed: 'Login failed. Please check your credentials.',
           },
         },
+
         register: {
           title: 'Create Your Account',
           subtitle: 'Start your journey into engineering excellence today.',
@@ -58,6 +58,7 @@ const resources = {
             registrationFailed: 'Registration failed. Please try again.',
           },
         },
+
         resetPassword: {
           title: 'Reset Password',
           subtitle: 'Enter your email and a new password to reset your account.',
@@ -69,12 +70,11 @@ const resources = {
         },
       },
 
-      // Cart
       cart: {
         title: 'Your Cart',
         subtitle: 'Review the items you have added and continue with your order.',
         empty: 'Your cart is empty right now.',
-        continueShopping: '← Continue Shopping',
+        continueShopping: 'Continue Shopping',
         clear: 'Clear Cart',
         remove: 'Remove',
         quantity: 'Quantity',
@@ -89,7 +89,7 @@ const resources = {
         total: 'Total',
         coupon: 'Coupon Code',
         apply: 'Apply',
-        checkout: 'Proceed to Checkout →',
+        checkout: 'Proceed to Checkout',
         secure: 'Secure checkout',
         confirmClear: 'Are you sure you want to clear your cart?',
         itemRemoved: 'Item removed from cart',
@@ -97,7 +97,6 @@ const resources = {
         itemsCount_other: '{{count}} items',
       },
 
-      // Products
       products: {
         title: 'Featured Products',
         subtitle: 'Handpicked picks with modern design and great value.',
@@ -111,7 +110,6 @@ const resources = {
         price: 'Price',
       },
 
-      // Categories
       categories: {
         title: 'Browse By Category',
         label: 'Categories',
@@ -122,10 +120,10 @@ const resources = {
         noCategories: 'No categories available.',
       },
 
-      // Shop
       shop: {
         title: 'Shop',
-        subtitle: 'Browse all products and refine results by category, price, and rating.',
+        subtitle:
+          'Browse all products and refine results by category, price, and rating.',
         noResults: 'No products match the selected filters.',
         filters: {
           title: 'Filters',
@@ -137,7 +135,6 @@ const resources = {
         },
       },
 
-      // Product Details
       productDetails: {
         title: 'Product Details',
         description: 'Description',
@@ -156,14 +153,13 @@ const resources = {
         yourRating: 'Your Rating',
         reviewSubmitted: 'Thank you for your review!',
         reviewFailed: 'Unable to submit review.',
-        back: '← Back to Products',
-        backHome: '← Back to Home',
+        back: 'Back to Products',
+        backHome: 'Back to Home',
         notFound: 'Product not found.',
         loadingError: 'Unable to load product details.',
         noImage: 'No image available',
       },
 
-      // Checkout
       checkout: {
         title: 'Checkout',
         subtitle: 'Confirm your details and place your order.',
@@ -180,12 +176,12 @@ const resources = {
 
       checkoutSuccess: {
         title: 'Order confirmed!',
-        message: 'Your order has been placed successfully. You will receive a confirmation shortly.',
+        message:
+          'Your order has been placed successfully. You will receive a confirmation shortly.',
         shopMore: 'Shop More',
         trackOrder: 'Track Order',
       },
 
-      // Profile
       profile: {
         title: 'My Profile',
         subtitle: 'Manage your account details and view your orders.',
@@ -222,10 +218,10 @@ const resources = {
         },
       },
 
-      // Footer
       footer: {
         company: 'Hexora Tech',
-        description: 'Modern learning, premium products, and a seamless shopping experience for every learner.',
+        description:
+          'Modern learning, premium products, and a seamless shopping experience for every learner.',
         quickLinks: 'Quick Links',
         contact: 'Contact',
         followUs: 'Follow Us',
@@ -239,7 +235,6 @@ const resources = {
         profile: 'Profile',
       },
 
-      // Common UI Elements
       common: {
         retry: 'Retry',
         back: 'Back',
@@ -264,7 +259,6 @@ const resources = {
         arabic: 'العربية',
       },
 
-      // Errors
       errors: {
         404: 'Page not found',
         500: 'Server error',
@@ -277,7 +271,6 @@ const resources = {
         notFound: 'Resource not found.',
       },
 
-      // Loading & Status
       status: {
         loading: 'Loading...',
         saving: 'Saving...',
@@ -290,7 +283,6 @@ const resources = {
 
   ar: {
     translation: {
-      // Navbar & Header
       navbar: {
         home: 'الرئيسية',
         shop: 'المتجر',
@@ -300,10 +292,9 @@ const resources = {
         logout: 'تسجيل الخروج',
         register: 'إنشاء حساب',
         search: 'عن ماذا تبحث؟',
-        contact:'تواصل معنا'
+        contact: 'تواصل معنا',
       },
 
-      // Authentication - Login
       auth: {
         login: {
           title: 'أهلا بعودتك',
@@ -318,9 +309,11 @@ const resources = {
           errors: {
             invalidEmail: 'عنوان بريد إلكتروني غير صحيح',
             passwordRequired: 'كلمة المرور مطلوبة',
-            loginFailed: 'فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد الخاصة بك.',
+            loginFailed:
+              'فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد الخاصة بك.',
           },
         },
+
         register: {
           title: 'إنشاء حسابك',
           subtitle: 'ابدأ رحلتك نحو التميز الهندسي اليوم.',
@@ -342,9 +335,11 @@ const resources = {
             registrationFailed: 'فشل التسجيل. يرجى المحاولة مرة أخرى.',
           },
         },
+
         resetPassword: {
           title: 'إعادة تعيين كلمة المرور',
-          subtitle: 'أدخل بريدك الإلكتروني وكلمة مرور جديدة لإعادة تعيين حسابك.',
+          subtitle:
+            'أدخل بريدك الإلكتروني وكلمة مرور جديدة لإعادة تعيين حسابك.',
           email: 'عنوان البريد الإلكتروني',
           newPassword: 'كلمة المرور الجديدة',
           submit: 'إعادة تعيين كلمة المرور',
@@ -353,12 +348,11 @@ const resources = {
         },
       },
 
-      // Cart
       cart: {
         title: 'سلة التسوق',
         subtitle: 'راجع العناصر التي أضفتها وواصل طلبك.',
         empty: 'سلة التسوق فارغة حالياً.',
-        continueShopping: '← متابعة التسوق',
+        continueShopping: 'متابعة التسوق',
         clear: 'تفريغ السلة',
         remove: 'إزالة',
         quantity: 'الكمية',
@@ -373,7 +367,7 @@ const resources = {
         total: 'الإجمالي',
         coupon: 'رمز القسيمة',
         apply: 'تطبيق',
-        checkout: 'متابعة الدفع ←',
+        checkout: 'متابعة الدفع',
         secure: 'دفع آمن',
         confirmClear: 'هل أنت متأكد من رغبتك في تفريغ السلة؟',
         itemRemoved: 'تمت إزالة العنصر من السلة',
@@ -381,7 +375,6 @@ const resources = {
         itemsCount_other: '{{count}} قطع',
       },
 
-      // Products
       products: {
         title: 'المنتجات المميزة',
         subtitle: 'اختيارات مفضلة ذات تصميم عصري وقيمة رائعة.',
@@ -395,7 +388,6 @@ const resources = {
         price: 'السعر',
       },
 
-      // Categories
       categories: {
         title: 'تصفح حسب الفئة',
         label: 'الفئات',
@@ -406,7 +398,6 @@ const resources = {
         noCategories: 'لا توجد فئات متاحة.',
       },
 
-      // Shop
       shop: {
         title: 'المتجر',
         subtitle: 'تصفح جميع المنتجات وصفّ النتائج حسب الفئة والسعر والتقييم.',
@@ -421,7 +412,6 @@ const resources = {
         },
       },
 
-      // Product Details
       productDetails: {
         title: 'تفاصيل المنتج',
         description: 'الوصف',
@@ -447,7 +437,6 @@ const resources = {
         noImage: 'لا توجد صورة متاحة',
       },
 
-      // Checkout
       checkout: {
         title: 'الدفع',
         subtitle: 'أكّد بياناتك وضع طلبك.',
@@ -469,7 +458,6 @@ const resources = {
         trackOrder: 'تتبع الطلب',
       },
 
-      // Profile
       profile: {
         title: 'ملفي الشخصي',
         subtitle: 'أدر بيانات حسابك واعرض طلباتك.',
@@ -506,10 +494,10 @@ const resources = {
         },
       },
 
-      // Footer
       footer: {
         company: 'Hexora Tech',
-        description: 'التعلم الحديث والمنتجات المميزة وتجربة تسوق سلسة لكل متعلم.',
+        description:
+          'التعلم الحديث والمنتجات المميزة وتجربة تسوق سلسة لكل متعلم.',
         quickLinks: 'روابط سريعة',
         contact: 'اتصل بنا',
         followUs: 'تابعنا',
@@ -523,7 +511,6 @@ const resources = {
         profile: 'الملف الشخصي',
       },
 
-      // Common UI Elements
       common: {
         retry: 'إعادة المحاولة',
         back: 'رجوع',
@@ -548,7 +535,6 @@ const resources = {
         arabic: 'العربية',
       },
 
-      // Errors
       errors: {
         404: 'الصفحة غير موجودة',
         500: 'خطأ في الخادم',
@@ -561,7 +547,6 @@ const resources = {
         notFound: 'المورد غير موجود.',
       },
 
-      // Loading & Status
       status: {
         loading: 'جاري التحميل...',
         saving: 'جاري الحفظ...',

@@ -7,25 +7,21 @@ import {
   Menu,
   PersonOutlineOutlined,
   Search,
-  ShoppingCartOutlined,
 } from "@mui/icons-material";
+import { IconButton, Badge } from "@mui/material";
+import { ShoppingCartOutlined } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-
 import useAuthStore from "../../hocks/authStore";
 import useThemeStore from "../../hocks/useThemeStore";
-
+import useCart from '../../hocks/useCart'
 export default function Navbar() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-
   const token = useAuthStore((state) => state.token);
   const logout = useAuthStore((state) => state.logout);
-
   const mode = useThemeStore((state) => state.mode);
   const toggleMode = useThemeStore((state) => state.toggleMode);
-
   const [isOpen, setIsOpen] = useState(false);
-
   const isDark = mode === "dark";
   const isArabic = i18n.language?.startsWith("ar");
 
@@ -73,7 +69,6 @@ export default function Navbar() {
     ? "border-b border-slate-800 bg-slate-950 px-4 py-4 sm:px-6 lg:px-10"
     : "border-b border-slate-100 bg-white px-4 py-4 sm:px-6 lg:px-10";
 
-  
   const searchClass = isDark
     ? "flex w-52 items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-3.5 py-2 lg:w-64"
     : "flex w-52 items-center gap-2 rounded-full border border-slate-200 bg-[#F5F5F5] px-3.5 py-2 lg:w-64";
@@ -114,11 +109,15 @@ export default function Navbar() {
 
   const authButtonClass =
     "rounded-xl bg-[#091E27] px-3 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#0f2d3a]";
-
+ const {data} = useCart();
+ const cartItems = data?.items||[];
+ const cartItemsCount = cartItems.reduce(
+  (total,item)=>total + Number(item.count || 0),0
+ )
   return (
     <nav className={navbarClass}>
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-        <Link to="/" onClick={closeMenu} >
+        <Link to="/" onClick={closeMenu}>
           Exclusive
         </Link>
 
@@ -188,9 +187,15 @@ export default function Navbar() {
             </Link>
           )}
 
-          <Link to="/cart" className={iconButtonClass} aria-label="Cart">
-            <ShoppingCartOutlined fontSize="small" />
-          </Link>
+         <IconButton component={Link} to="/cart">
+  <Badge
+    badgeContent={cartItemsCount}
+    color="error"
+    showZero={false}
+  >
+    <ShoppingCartOutlined />
+  </Badge>
+</IconButton>
         </div>
 
         <button
