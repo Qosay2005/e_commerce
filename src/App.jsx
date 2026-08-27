@@ -19,18 +19,26 @@ export default function App() {
     document.documentElement.lang = isArabic ? 'ar' : 'en'
   }, [i18n.language])
 
+  useEffect(() => {
+    if (mode === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [mode])
+
   const theme = createTheme({
     palette: {
       mode,
       primary: { main: '#091E27' },
       secondary: { main: '#5B8C9C' },
       background: {
-        default: mode === 'dark' ? '#0f172a' : '#dbe7ee',
-        paper: mode === 'dark' ? '#111827' : '#ffffff',
+        default: mode === 'dark' ? '#09090B' : '#dbe7ee',
+        paper: mode === 'dark' ? '#18181B' : '#ffffff',
       },
       text: {
-        primary: mode === 'dark' ? '#f8fafc' : '#091E27',
-        secondary: mode === 'dark' ? '#cbd5e1' : '#4b5563',
+        primary: mode === 'dark' ? '#FFFFFF' : '#091E27',
+        secondary: mode === 'dark' ? '#D4D4D8' : '#4b5563',
       },
     },
     typography: {

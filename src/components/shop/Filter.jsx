@@ -10,8 +10,10 @@ import {
   Typography,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { useTranslation } from "react-i18next";
 
 export default function Filter({ filters, setFilters }) {
+  const { t } = useTranslation();
   const [localFilters, setLocalFilters] = useState(filters);
 
   const updateFilter = (name, value) => {
@@ -26,22 +28,21 @@ export default function Filter({ filters, setFilters }) {
   };
 
   return (
-    <Card className="h-fit rounded-xl border border-slate-200 bg-white shadow-sm">
+    <Card className="h-fit rounded-xl border border-slate-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
       <CardContent className="space-y-5 p-5">
-        
-        <Typography variant="h6" className="font-bold text-slate-800">
-          Filters
+        <Typography variant="h6" className="font-bold text-slate-800 dark:text-white">
+          {t("shop.filters.title")}
         </Typography>
 
         <div>
-          <Typography variant="caption" className="mb-2 block font-semibold">
-            Search Products
+          <Typography variant="caption" className="mb-2 block font-semibold text-zinc-700 dark:text-zinc-300">
+            {t("shop.filters.searchProducts")}
           </Typography>
 
           <TextField
             fullWidth
             size="small"
-            placeholder="What are you looking for?"
+            placeholder={t("navbar.search")}
             value={localFilters.search}
             onChange={(event) =>
               updateFilter("search", event.target.value)
@@ -49,16 +50,27 @@ export default function Filter({ filters, setFilters }) {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
+                  <SearchIcon fontSize="small" className="text-zinc-500 dark:text-zinc-400" />
                 </InputAdornment>
               ),
             }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "10px",
+                backgroundColor: "transparent",
+                color: "inherit",
+              },
+              "& .MuiInputBase-input": {
+                color: "inherit",
+              },
+            }}
+            className="text-zinc-900 dark:text-zinc-100"
           />
         </div>
 
         <div>
-          <Typography variant="caption" className="mb-2 block font-semibold">
-            Price Range
+          <Typography variant="caption" className="mb-2 block font-semibold text-zinc-700 dark:text-zinc-300">
+            {t("shop.filters.priceRange")}
           </Typography>
 
           <div className="grid grid-cols-2 gap-2">
@@ -66,29 +78,31 @@ export default function Filter({ filters, setFilters }) {
               fullWidth
               size="small"
               type="number"
-              placeholder="Min"
+              placeholder={t("shop.filters.min")}
               value={localFilters.minPrice}
               onChange={(event) =>
                 updateFilter("minPrice", event.target.value)
               }
+              className="text-zinc-900 dark:text-zinc-100"
             />
 
             <TextField
               fullWidth
               size="small"
               type="number"
-              placeholder="Max"
+              placeholder={t("shop.filters.max")}
               value={localFilters.maxPrice}
               onChange={(event) =>
                 updateFilter("maxPrice", event.target.value)
               }
+              className="text-zinc-900 dark:text-zinc-100"
             />
           </div>
         </div>
 
         <div>
-          <Typography variant="caption" className="mb-2 block font-semibold">
-            Sort By
+          <Typography variant="caption" className="mb-2 block font-semibold text-zinc-700 dark:text-zinc-300">
+            {t("shop.filters.sortBy")}
           </Typography>
 
           <Select
@@ -98,15 +112,17 @@ export default function Filter({ filters, setFilters }) {
             onChange={(event) =>
               updateFilter("sortBy", event.target.value)
             }
+            className="text-zinc-900 dark:text-zinc-100"
           >
-            <MenuItem value="name">Name</MenuItem>
-            <MenuItem value="price">Price</MenuItem>
-            <MenuItem value="rate">Rating</MenuItem>
+            <MenuItem value="name">{t("shop.filters.name")}</MenuItem>
+            <MenuItem value="price">{t("shop.filters.price")}</MenuItem>
+            <MenuItem value="rate">{t("shop.filters.rating")}</MenuItem>
           </Select>
         </div>
+
         <div>
-          <Typography variant="caption" className="mb-2 block font-semibold">
-            Order
+          <Typography variant="caption" className="mb-2 block font-semibold text-zinc-700 dark:text-zinc-300">
+            {t("shop.filters.order")}
           </Typography>
 
           <Select
@@ -116,9 +132,10 @@ export default function Filter({ filters, setFilters }) {
             onChange={(event) =>
               updateFilter("order", event.target.value)
             }
+            className="text-zinc-900 dark:text-zinc-100"
           >
-            <MenuItem value="ascending">Ascending</MenuItem>
-            <MenuItem value="descending">Descending</MenuItem>
+            <MenuItem value="ascending">{t("shop.filters.ascending")}</MenuItem>
+            <MenuItem value="descending">{t("shop.filters.descending")}</MenuItem>
           </Select>
         </div>
 
@@ -133,7 +150,7 @@ export default function Filter({ filters, setFilters }) {
             },
           }}
         >
-          APPLY FILTERS
+          {t("shop.filters.apply")}
         </Button>
       </CardContent>
     </Card>

@@ -2,22 +2,25 @@ import React from 'react';
 import { Button, Card, CardContent, Typography } from '@mui/material';
 import { CheckCircleOutlineRounded } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function CheckoutSuccess() {
+  const { t } = useTranslation();
+
   return (
     <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
-      <Card elevation={0} className="rounded-[24px] border border-zinc-200/80 bg-white shadow-sm">
+      <Card elevation={0} className="rounded-[24px] border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
         <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#DB4444]/10">
             <CheckCircleOutlineRounded sx={{ fontSize: 40 }} className="text-[#DB4444]" />
           </span>
 
-          <Typography variant="h4" className="text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-3xl">
-            Order confirmed!
+          <Typography variant="h4" className="text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
+            {t('checkoutSuccess.title')}
           </Typography>
 
-          <Typography variant="body1" className="max-w-md text-zinc-500">
-            Your order has been placed successfully. You will receive a confirmation shortly.
+          <Typography variant="body1" className="max-w-md text-zinc-500 dark:text-zinc-300">
+            {t('checkoutSuccess.message')}
           </Typography>
 
           <Button
@@ -36,7 +39,7 @@ export default function CheckoutSuccess() {
               '&:hover': { backgroundColor: '#c23a3a' },
             }}
           >
-            Shop More
+            {t('checkoutSuccess.shopMore')}
           </Button>
         </CardContent>
       </Card>

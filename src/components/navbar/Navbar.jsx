@@ -118,7 +118,7 @@ export default function Navbar() {
     <nav className={navbarClass}>
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
         <Link to="/" onClick={closeMenu}>
-          Exclusive
+          {t("navbar.brand")}
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">

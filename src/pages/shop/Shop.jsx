@@ -11,12 +11,14 @@ import {
 } from "@mui/material";
 
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import useProducts from "../../hocks/useProducts";
 import Filter from "../../components/shop/Filter";
 import PageTransition from "../../PageTransition";
 
 export default function Shop() {
+  const { t } = useTranslation();
   const { data = [], isLoading, isError, error, refetch } = useProducts();
 
   const [filters, setFilters] = useState({
@@ -72,7 +74,7 @@ export default function Shop() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-[#121212]">
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950">
         <CircularProgress />
       </div>
     );
@@ -80,7 +82,7 @@ export default function Shop() {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-white px-4 py-8 dark:bg-[#121212]">
+      <div className="min-h-screen bg-white px-4 py-8 dark:bg-zinc-950">
         <div className="mx-auto max-w-6xl">
           <Alert
             severity="error"
@@ -90,11 +92,11 @@ export default function Shop() {
                 size="small"
                 onClick={refetch}
               >
-                Retry
+                {t("common.retry")}
               </Button>
             }
           >
-            {error?.message || "Unable to load products."}
+            {error?.message || t("shop.loadError")}
           </Alert>
         </div>
       </div>
@@ -103,7 +105,7 @@ export default function Shop() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-white dark:bg-[#121212]">
+      <div className="min-h-screen bg-white dark:bg-zinc-950">
 
         <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
@@ -112,16 +114,16 @@ export default function Shop() {
 
             <Typography
               variant="h4"
-              className="font-semibold text-slate-800 dark:!text-white"
+              className="font-semibold text-slate-800 dark:text-white"
             >
-              Shop
+              {t("shop.title")}
             </Typography>
 
             <Typography
               variant="body2"
-              className="text-slate-500 dark:!text-white"
+              className="text-slate-500 dark:text-zinc-300"
             >
-              Browse all products and find what you need.
+              {t("shop.subtitle")}
             </Typography>
 
           </div>
@@ -149,12 +151,12 @@ export default function Shop() {
                     p-8
                     text-center
                     text-slate-500
-                    dark:border-slate-700
-                    dark:bg-[#1e1e1e]
-                    dark:!text-white
+                    dark:border-zinc-700
+                    dark:bg-zinc-900
+                    dark:text-zinc-300
                   "
                 >
-                  No products match the selected filters.
+                  {t("shop.noResults")}
                 </div>
 
               ) : (
@@ -172,8 +174,8 @@ export default function Shop() {
                       bg-white
                       shadow-sm
 
-                      dark:border-slate-700
-                      dark:!bg-[#1e1e1e]
+                      dark:border-zinc-700
+                      dark:!bg-zinc-900
                     "
                   >
 
@@ -203,7 +205,7 @@ export default function Shop() {
                           className="
                             font-semibold
                             text-slate-800
-                            dark:!text-white
+                            dark:text-white
                           "
                         >
                           {product.name}
