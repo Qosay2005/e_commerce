@@ -20,7 +20,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../../hocks/authStore";
 import useThemeStore from "../../hocks/useThemeStore";
 import { useTranslation } from "react-i18next";
-
+import PageTransition from '../../PageTransition'
 export default function Login() {
   const [serverErrors, setServerErrors] = useState([]);
 
@@ -79,6 +79,7 @@ export default function Login() {
   };
 
   return (
+    <PageTransition>
     <Box
       className={
         isDark
@@ -290,5 +291,6 @@ export default function Login() {
         </Box>
       </Box>
     </Box>
+    </PageTransition>
   );
 }

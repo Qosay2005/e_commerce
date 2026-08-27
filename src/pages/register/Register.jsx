@@ -23,7 +23,7 @@ import { registerSchema } from "../../validation/RegisterSchema";
 import axiosInstance from "../../api/axiosinstans";
 import { Link } from "react-router-dom";
 import useThemeStore from "../../hocks/useThemeStore";
-
+import PageTransition from '../../PageTransition'
 export default function Register() {
   const [serverErrors, setServerErrors] = useState([]);
 
@@ -97,6 +97,7 @@ export default function Register() {
   };
 
   return (
+    <PageTransition>
     <Box
       className={
         isDark
@@ -332,5 +333,6 @@ export default function Register() {
         </Box>
       </Box>
     </Box>
+    </PageTransition>
   );
 }

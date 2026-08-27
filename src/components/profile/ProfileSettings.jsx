@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+
 import {
   Alert,
   Box,
@@ -12,32 +13,115 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+
 import {
   EmailOutlined,
   LockOutlined,
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
+
 import PropTypes from "prop-types";
+
 import {
   useChangeEmail,
   useChangePassword,
 } from "../../hocks/useProfile";
-import useThemeStore from "../../hocks/useThemeStore";
 
+import useThemeStore from "../../hocks/useThemeStore";
+import PageTransition from '../../PageTransition'
 const PRIMARY_COLOR = "#DB4444";
 
-export default function ProfileSettings({ profile, onProfileUpdated }) {
+
+function PasswordField({
+  field,
+  label,
+  autoComplete,
+  value,
+  onChange,
+  visible,
+  onToggle,
+  iconColor,
+  textFieldSx,
+  visibilityButtonSx,
+  error = false,
+  helperText = "",
+}) {
+  return (
+  <PageTransition>
+    <TextField
+      type={visible ? "text" : "password"}
+      label={label}
+      value={value}
+      onChange={onChange}
+      required
+      fullWidth
+      autoComplete={autoComplete}
+      error={error}
+      helperText={helperText}
+      sx={textFieldSx}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <LockOutlined sx={{ color: iconColor }} />
+          </InputAdornment>
+        ),
+
+        endAdornment: (
+          <InputAdornment position="end">
+            <IconButton
+              edge="end"
+              type="button"
+              onClick={onToggle}
+              sx={visibilityButtonSx}
+              aria-label={`Toggle ${label.toLowerCase()} visibility`}
+            >
+              {visible ? (
+                <VisibilityOff fontSize="small" />
+              ) : (
+                <Visibility fontSize="small" />
+              )}
+            </IconButton>
+          </InputAdornment>
+        ),
+      }}
+    />
+    </PageTransition>
+  );
+}
+
+PasswordField.propTypes = {
+  field: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  autoComplete: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  visible: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
+  iconColor: PropTypes.string.isRequired,
+  textFieldSx: PropTypes.object.isRequired,
+  visibilityButtonSx: PropTypes.object.isRequired,
+  error: PropTypes.bool,
+  helperText: PropTypes.string,
+};
+
+export default function ProfileSettings({
+  profile,
+  onProfileUpdated,
+}) {
   const mode = useThemeStore((state) => state.mode);
   const isDark = mode === "dark";
 
   const [activeTab, setActiveTab] = useState(0);
+
   const [email, setEmail] = useState("");
+
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",
     confirmNewPassword: "",
   });
+
   const [visiblePasswords, setVisiblePasswords] = useState({
     currentPassword: false,
     newPassword: false,
@@ -53,27 +137,42 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
     "& .MuiInputLabel-root": {
       color: isDark ? "#94a3b8" : "#71717a",
     },
+
     "& .MuiInputLabel-root.Mui-focused": {
       color: PRIMARY_COLOR,
     },
+
     "& .MuiOutlinedInput-root": {
       borderRadius: "12px",
       backgroundColor: isDark ? "#0f172a" : "#fafafa",
       color: isDark ? "#f8fafc" : "#18181b",
+
       "& fieldset": {
         borderColor: isDark ? "#334155" : "#d4d4d8",
       },
+
       "&:hover fieldset": {
         borderColor: PRIMARY_COLOR,
       },
+
       "&.Mui-focused fieldset": {
         borderColor: PRIMARY_COLOR,
       },
+    },
+
+    "& .MuiInputBase-input": {
+      color: isDark ? "#f8fafc" : "#18181b",
+    },
+
+    "& .MuiFormHelperText-root": {
+      marginLeft: 0,
+      marginRight: 0,
     },
   };
 
   const visibilityButtonSx = {
     color: isDark ? "#94a3b8" : "#71717a",
+
     "&:hover": {
       backgroundColor: isDark
         ? "rgba(148, 163, 184, 0.08)"
@@ -89,9 +188,14 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
 
   const handleTabChange = (_, value) => {
     setActiveTab(value);
+
     emailMutation.reset();
     passwordMutation.reset();
   };
+
+  // =========================
+  // EMAIL
+  // =========================
 
   const handleEmailChange = (event) => {
     emailMutation.reset();
@@ -104,20 +208,29 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
     const newEmail = email.trim();
     const currentEmail = profile?.email?.trim();
 
-    if (!newEmail || newEmail.toLowerCase() === currentEmail?.toLowerCase()) {
+    if (
+      !newEmail ||
+      newEmail.toLowerCase() === currentEmail?.toLowerCase()
+    ) {
       return;
     }
 
     emailMutation.mutate(
-      { NewEmail: newEmail },
+      {
+        NewEmail: newEmail,
+      },
       {
         onSuccess: async () => {
           setEmail("");
           await onProfileUpdated?.();
         },
-      },
+      }
     );
   };
+
+  // =========================
+  // PASSWORD
+  // =========================
 
   const handlePasswordChange = (field) => (event) => {
     passwordMutation.reset();
@@ -138,7 +251,10 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
   const handlePasswordSubmit = (event) => {
     event.preventDefault();
 
-    if (passwords.newPassword !== passwords.confirmNewPassword) {
+    if (
+      passwords.newPassword !==
+      passwords.confirmNewPassword
+    ) {
       return;
     }
 
@@ -162,7 +278,7 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
             confirmNewPassword: false,
           });
         },
-      },
+      }
     );
   };
 
@@ -172,56 +288,14 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
 
   const sameEmail =
     Boolean(email.trim()) &&
-    email.trim().toLowerCase() === profile?.email?.trim().toLowerCase();
-
-  const PasswordField = ({ field, label, autoComplete, error = false, helperText = "" }) => (
-    <TextField
-      type={visiblePasswords[field] ? "text" : "password"}
-      label={label}
-      value={passwords[field]}
-      onChange={handlePasswordChange(field)}
-      required
-      fullWidth
-      autoComplete={autoComplete}
-      error={error}
-      helperText={helperText}
-      sx={textFieldSx}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <LockOutlined sx={{ color: iconColor }} />
-          </InputAdornment>
-        ),
-        endAdornment: (
-          <InputAdornment position="end">
-            <IconButton
-              edge="end"
-              onClick={() => togglePasswordVisibility(field)}
-              sx={visibilityButtonSx}
-              aria-label={`Toggle ${label.toLowerCase()} visibility`}
-            >
-              {visiblePasswords[field] ? (
-                <VisibilityOff fontSize="small" />
-              ) : (
-                <Visibility fontSize="small" />
-              )}
-            </IconButton>
-          </InputAdornment>
-        ),
-      }}
-    />
-  );
-
-  PasswordField.propTypes = {
-    field: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    autoComplete: PropTypes.string.isRequired,
-    error: PropTypes.bool,
-    helperText: PropTypes.string,
-  };
+    email.trim().toLowerCase() ===
+      profile?.email?.trim().toLowerCase();
 
   return (
     <div className="space-y-6">
+
+      {/* ================= HEADER ================= */}
+
       <div>
         <Typography
           variant="h6"
@@ -242,6 +316,8 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
         </Typography>
       </div>
 
+      {/* ================= TABS ================= */}
+
       <Box
         sx={{
           borderBottom: 1,
@@ -254,6 +330,7 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
           variant="fullWidth"
           sx={{
             minHeight: 52,
+
             "& .MuiTab-root": {
               textTransform: "none",
               fontWeight: 700,
@@ -264,9 +341,11 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
                 sm: "0.9rem",
               },
             },
+
             "& .Mui-selected": {
               color: `${PRIMARY_COLOR} !important`,
             },
+
             "& .MuiTabs-indicator": {
               backgroundColor: PRIMARY_COLOR,
               height: 3,
@@ -279,6 +358,7 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
             iconPosition="start"
             label="Email"
           />
+
           <Tab
             icon={<LockOutlined fontSize="small" />}
             iconPosition="start"
@@ -287,8 +367,11 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
         </Tabs>
       </Box>
 
+      {/* ================= EMAIL TAB ================= */}
+
       {activeTab === 0 && (
         <div className="space-y-5">
+
           <div>
             <Typography
               variant="subtitle1"
@@ -309,6 +392,8 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
             </Typography>
           </div>
 
+          {/* Current Email */}
+
           <div
             className={`rounded-xl border p-4 ${
               isDark
@@ -317,6 +402,7 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
             }`}
           >
             <div className="flex items-center gap-3">
+
               <div
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                   isDark ? "bg-slate-700/70" : "bg-white"
@@ -331,10 +417,13 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
               </div>
 
               <div className="min-w-0">
+
                 <Typography
                   variant="caption"
                   className={`block font-medium ${
-                    isDark ? "text-slate-400" : "text-zinc-500"
+                    isDark
+                      ? "text-slate-400"
+                      : "text-zinc-500"
                   }`}
                 >
                   Current Email
@@ -343,29 +432,44 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
                 <Typography
                   variant="body1"
                   className={`mt-0.5 break-all font-semibold ${
-                    isDark ? "text-slate-100" : "text-zinc-900"
+                    isDark
+                      ? "text-slate-100"
+                      : "text-zinc-900"
                   }`}
                 >
                   {profile?.email || "—"}
                 </Typography>
+
               </div>
             </div>
           </div>
 
+          {/* Success */}
+
           {emailMutation.isSuccess && (
-            <Alert severity="success" onClose={() => emailMutation.reset()}>
+            <Alert
+              severity="success"
+              onClose={() => emailMutation.reset()}
+            >
               Email changed successfully.
             </Alert>
           )}
 
+          {/* Error */}
+
           {emailMutation.isError && (
-            <Alert severity="error" onClose={() => emailMutation.reset()}>
+            <Alert
+              severity="error"
+              onClose={() => emailMutation.reset()}
+            >
               {getErrorMessage(
                 emailMutation.error,
-                "Failed to change email.",
+                "Failed to change email."
               )}
             </Alert>
           )}
+
+          {/* Same Email */}
 
           {sameEmail && (
             <Alert severity="info">
@@ -373,7 +477,12 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
             </Alert>
           )}
 
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
+          {/* Email Form */}
+
+          <form
+            onSubmit={handleEmailSubmit}
+            className="space-y-4"
+          >
             <TextField
               type="email"
               label="New Email Address"
@@ -387,7 +496,11 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <EmailOutlined sx={{ color: iconColor }} />
+                    <EmailOutlined
+                      sx={{
+                        color: iconColor,
+                      }}
+                    />
                   </InputAdornment>
                 ),
               }}
@@ -409,6 +522,7 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
                 px: 3,
                 minHeight: 44,
                 boxShadow: "none",
+
                 "&:hover": {
                   backgroundColor: "#c53d3d",
                   boxShadow: "none",
@@ -417,7 +531,10 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
             >
               {emailMutation.isPending ? (
                 <span className="flex items-center gap-2">
-                  <CircularProgress size={18} sx={{ color: "#fff" }} />
+                  <CircularProgress
+                    size={18}
+                    sx={{ color: "#fff" }}
+                  />
                   Updating...
                 </span>
               ) : (
@@ -428,8 +545,11 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
         </div>
       )}
 
+      {/* ================= PASSWORD TAB ================= */}
+
       {activeTab === 1 && (
         <div className="space-y-5">
+
           <div>
             <Typography
               variant="subtitle1"
@@ -450,20 +570,32 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
             </Typography>
           </div>
 
+          {/* Success */}
+
           {passwordMutation.isSuccess && (
-            <Alert severity="success" onClose={() => passwordMutation.reset()}>
+            <Alert
+              severity="success"
+              onClose={() => passwordMutation.reset()}
+            >
               Password changed successfully.
             </Alert>
           )}
 
+          {/* Error */}
+
           {passwordMutation.isError && (
-            <Alert severity="error" onClose={() => passwordMutation.reset()}>
+            <Alert
+              severity="error"
+              onClose={() => passwordMutation.reset()}
+            >
               {getErrorMessage(
                 passwordMutation.error,
-                "Failed to change password.",
+                "Failed to change password."
               )}
             </Alert>
           )}
+
+          {/* Password mismatch */}
 
           {passwordMismatch && (
             <Alert severity="warning">
@@ -471,25 +603,62 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
             </Alert>
           )}
 
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+          {/* Password Form */}
+
+          <form
+            onSubmit={handlePasswordSubmit}
+            className="space-y-4"
+          >
+
             <PasswordField
               field="currentPassword"
               label="Current Password"
               autoComplete="current-password"
+              value={passwords.currentPassword}
+              onChange={handlePasswordChange("currentPassword")}
+              visible={visiblePasswords.currentPassword}
+              onToggle={() =>
+                togglePasswordVisibility("currentPassword")
+              }
+              iconColor={iconColor}
+              textFieldSx={textFieldSx}
+              visibilityButtonSx={visibilityButtonSx}
             />
 
             <PasswordField
               field="newPassword"
               label="New Password"
               autoComplete="new-password"
+              value={passwords.newPassword}
+              onChange={handlePasswordChange("newPassword")}
+              visible={visiblePasswords.newPassword}
+              onToggle={() =>
+                togglePasswordVisibility("newPassword")
+              }
+              iconColor={iconColor}
+              textFieldSx={textFieldSx}
+              visibilityButtonSx={visibilityButtonSx}
             />
 
             <PasswordField
               field="confirmNewPassword"
               label="Confirm New Password"
               autoComplete="new-password"
+              value={passwords.confirmNewPassword}
+              onChange={handlePasswordChange("confirmNewPassword")}
+              visible={visiblePasswords.confirmNewPassword}
+              onToggle={() =>
+                togglePasswordVisibility("confirmNewPassword")
+              }
+              iconColor={iconColor}
+              textFieldSx={textFieldSx}
+              visibilityButtonSx={visibilityButtonSx}
               error={passwordMismatch}
-              helperText={passwordMismatch ? "Passwords do not match" : ""}
+              helperText={
+                passwordMismatch
+                  ? "Passwords do not match"
+                  : ""
+              }
             />
 
             <Button
@@ -510,6 +679,7 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
                 px: 3,
                 minHeight: 44,
                 boxShadow: "none",
+
                 "&:hover": {
                   backgroundColor: "#0f2d3a",
                   boxShadow: "none",
@@ -518,13 +688,17 @@ export default function ProfileSettings({ profile, onProfileUpdated }) {
             >
               {passwordMutation.isPending ? (
                 <span className="flex items-center gap-2">
-                  <CircularProgress size={18} sx={{ color: "#fff" }} />
+                  <CircularProgress
+                    size={18}
+                    sx={{ color: "#fff" }}
+                  />
                   Updating...
                 </span>
               ) : (
                 "Update Password"
               )}
             </Button>
+
           </form>
         </div>
       )}

@@ -1,8 +1,10 @@
 import React from "react";
 import { Button, TextField, Typography } from "@mui/material";
-
+import PageTransition from '../../PageTransition'
 export default function Contact() {
   return (
+    
+ <PageTransition>
     <section className="min-h-screen bg-white px-4 py-10 dark:bg-[#121212] sm:px-6 lg:px-8 flex justify-items-center">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8">
@@ -77,5 +79,6 @@ export default function Contact() {
         </div>
       </div>
     </section>
+     </PageTransition>
   );
 }

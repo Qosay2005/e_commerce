@@ -27,7 +27,7 @@ import useCart from "../../hocks/useCart";
 import useUpdateCart from "../../hocks/useUpdateCart";
 import useRemoveFromCart from "../../hocks/useRemoveFromCart";
 import useClearCart from "../../hocks/useClearCart";
-
+import PageTransition from '../../PageTransition'
 const PRIMARY_COLOR = "#DB4444";
 const PRIMARY_HOVER = "#C53636";
 const primaryButtonSx = {
@@ -107,6 +107,7 @@ export default function Cart() {
   }
 
   return (
+    <PageTransition>
     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -347,5 +348,6 @@ export default function Cart() {
         </div>
       )}
     </section>
+    </PageTransition>
   );
 }

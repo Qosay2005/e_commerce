@@ -8,7 +8,7 @@ import {
 
 import PropTypes from "prop-types";
 import useThemeStore from "../../hocks/useThemeStore";
-
+import PageTransition from '../../PageTransition'
 const formatDate = (date) => {
   if (!date) return "—";
 
@@ -59,6 +59,7 @@ export default function ProfileOrders({ orders }) {
   }
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       <div>
         <Typography
@@ -225,6 +226,7 @@ export default function ProfileOrders({ orders }) {
         ))}
       </div>
     </div>
+    </PageTransition>
   );
 }
 

@@ -12,6 +12,7 @@ import ProfileLayout from './pages/profile/ProfileLayout';
 import Shop from './pages/shop/Shop';
 import ForgotPassword from './pages/resetPassword/ForgotPassword';
 import Contact from './pages/contact/Contact'
+import ResetPassword from './pages/resetPassword/RestPassword'
 const router = createBrowserRouter([
   {
     path: '/',
@@ -43,7 +44,12 @@ const router = createBrowserRouter([
          element: <ProtectedRouter><ProfileLayout /></ProtectedRouter> },
       { 
         path: '/login',
-         element: <Login /> },
+         element: <Login />
+         },
+         { 
+        path: '/reset-password',
+         element: <ResetPassword />
+         },
       { 
         path: '/forgot-password',
          element: <ForgotPassword /> },

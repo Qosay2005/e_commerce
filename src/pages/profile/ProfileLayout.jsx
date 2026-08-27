@@ -26,7 +26,7 @@ import useThemeStore from "../../hocks/useThemeStore";
 import ProfileInfo from "../../components/profile/ProfileInfo";
 import ProfileOrders from "../../components/profile/ProfileOrders";
 import ProfileSettings from "../../components/profile/ProfileSettings";
-
+import PageTransition from '../../PageTransition'
 const PRIMARY_COLOR = "#DB4444";
 
 const MENU_ITEMS = [
@@ -96,6 +96,7 @@ export default function ProfileLayout() {
   }
 
   return (
+    <PageTransition>
     <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <div className="mb-6 sm:mb-8">
         <Typography
@@ -234,5 +235,6 @@ export default function ProfileLayout() {
         </Box>
       </div>
     </section>
+    </PageTransition>
   );
 }

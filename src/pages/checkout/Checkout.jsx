@@ -25,7 +25,7 @@ import { Link } from "react-router-dom";
 
 import useCheckout from "../../hocks/useCheckout";
 import useCart from "../../hocks/useCart";
-
+import PageTransition from '../../PageTransition'
 const PRIMARY_COLOR = "#DB4444";
 const PRIMARY_HOVER = "#C53636";
 
@@ -132,6 +132,7 @@ export default function Checkout() {
   }
 
   return (
+    <PageTransition>
     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <div className="mb-8">
         <div className="mb-3 flex items-center gap-3">
@@ -389,5 +390,6 @@ export default function Checkout() {
         </Card>
       </div>
     </section>
+    </PageTransition>
   );
 }
