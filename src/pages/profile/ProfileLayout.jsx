@@ -1,137 +1,219 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Alert,
   Box,
   Button,
   CircularProgress,
-  Tab,
-  Tabs,
+  Divider,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   Typography,
-} from '@mui/material';
-import { PersonOutlineOutlined, ReceiptLongOutlined } from '@mui/icons-material';
-import { useTranslation } from 'react-i18next';
-import useProfile, { normalizeProfileData } from '../../hocks/useProfile';
-import useThemeStore from '../../hocks/useThemeStore';
-import ProfileInfo from '../../components/profile/ProfileInfo';
-import ProfileOrders from '../../components/profile/ProfileOrders';
+} from "@mui/material";
 
-function TabPanel({ children, value, index }) {
-  if (value !== index) return null;
+import {
+  PersonOutlineOutlined,
+  ReceiptLongOutlined,
+  SettingsOutlined,
+} from "@mui/icons-material";
 
-  return (
-    <Box role="tabpanel" aria-labelledby={`profile-tab-${index}`} className="pt-6">
-      {children}
-    </Box>
-  );
-}
+import { useTranslation } from "react-i18next";
+
+import useProfile from "../../hocks/useProfile";
+import useThemeStore from "../../hocks/useThemeStore";
+
+import ProfileInfo from "../../components/profile/ProfileInfo";
+import ProfileOrders from "../../components/profile/ProfileOrders";
+import ProfileSettings from "../../components/profile/ProfileSettings";
+
+const PRIMARY_COLOR = "#DB4444";
+
+const MENU_ITEMS = [
+  {
+    id: "account",
+    icon: PersonOutlineOutlined,
+    label: "profile.menu.account",
+    fallback: "Account Information",
+  },
+  {
+    id: "orders",
+    icon: ReceiptLongOutlined,
+    label: "profile.menu.orders",
+    fallback: "Orders",
+  },
+  {
+    id: "settings",
+    icon: SettingsOutlined,
+    label: "profile.menu.settings",
+    fallback: "Settings",
+  },
+];
 
 export default function ProfileLayout() {
   const { t } = useTranslation();
+
   const mode = useThemeStore((state) => state.mode);
-  const isDark = mode === 'dark';
-  const [activeTab, setActiveTab] = useState(0);
-  const { data, isLoading, isError, error, refetch, isFetching } = useProfile();
-  const profile = normalizeProfileData(data);
+  const isDark = mode === "dark";
+
+  const [activeTab, setActiveTab] = useState("account");
+
+  const { data: profile,  isLoading,  isError,  error, refetch, isFetching,} = useProfile();
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <CircularProgress sx={{ color: '#DB4444' }} />
+      <div className="flex min-h-[70vh] items-center justify-center">
+        <CircularProgress sx={{ color: PRIMARY_COLOR }} />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <Alert
           severity="error"
           action={
             <Button color="inherit" size="small" onClick={() => refetch()}>
-              {t('common.retry')}
+              {t("common.retry", {
+                defaultValue: "Retry",
+              })}
             </Button>
           }
         >
-          {error?.response?.data?.message || error?.message || t('profile.info.loadError')}
+          {error?.response?.data?.message ||
+            error?.message ||
+            "Failed to load profile"}
         </Alert>
       </section>
     );
   }
-
+ {console.log(profile)}
   return (
-    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <div className="mb-3 flex items-center gap-3">
-          <span className="h-7 w-4 rounded-[3px] bg-gradient-to-b from-[#FF6B6B] to-[#DB4444]" />
-          <Typography variant="subtitle2" className="font-bold uppercase tracking-[0.12em] text-[#DB4444]">
-            {t('profile.title')}
-          </Typography>
-        </div>
         <Typography
-          variant="h4"
           component="h1"
-          className={`text-2xl font-extrabold tracking-tight sm:text-3xl ${isDark ? 'text-slate-100' : 'text-zinc-900'}`}
+          variant="h4"
+          className={`font-extrabold tracking-tight ${
+            isDark ? "text-slate-100" : "text-zinc-900"
+          }`}
         >
-          {t('profile.title')}
+          {t("profile.title", {
+            defaultValue: "Profile",
+          })}
         </Typography>
-        <Typography variant="body2" className={`mt-1 ${isDark ? 'text-slate-400' : 'text-zinc-500'}`}>
-          {t('profile.subtitle')}
+
+        <Typography
+          variant="body2"
+          className={`mt-2 ${isDark ? "text-slate-400" : "text-zinc-500"}`}
+        >
+          {t("profile.subtitle", {
+            defaultValue: "Manage your account and orders",
+          })}
         </Typography>
       </div>
 
-      <Box
-        className={`rounded-[24px] border shadow-sm ${isDark ? 'border-slate-700 bg-slate-800/60' : 'border-zinc-200/80 bg-white'}`}
-      >
-        <Tabs
-          value={activeTab}
-          onChange={(_, nextTab) => setActiveTab(nextTab)}
-          variant="scrollable"
-          scrollButtons="auto"
-          aria-label={t('profile.title')}
-          sx={{
-            px: { xs: 1, sm: 2 },
-            borderBottom: 1,
-            borderColor: isDark ? 'rgba(148,163,184,0.2)' : 'rgba(228,228,231,0.8)',
-            '& .MuiTab-root': {
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: '0.95rem',
-              minHeight: 56,
-              color: isDark ? '#94a3b8' : '#71717a',
-            },
-            '& .Mui-selected': {
-              color: isDark ? '#f8fafc' : '#091E27',
-            },
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#DB4444',
-              height: 3,
-              borderRadius: '3px 3px 0 0',
-            },
-          }}
+      <div className="grid gap-6 md:grid-cols-[210px_1fr]">
+        {/* Sidebar */}
+        <Box
+          className={`h-fit rounded-2xl border p-2 ${
+            isDark
+              ? "border-slate-700 bg-slate-900"
+              : "border-zinc-200 bg-white"
+          }`}
         >
-          <Tab
-            id="profile-tab-0"
-            icon={<PersonOutlineOutlined fontSize="small" />}
-            iconPosition="start"
-            label={t('profile.tabs.info')}
-          />
-          <Tab
-            id="profile-tab-1"
-            icon={<ReceiptLongOutlined fontSize="small" />}
-            iconPosition="start"
-            label={t('profile.tabs.orders')}
-          />
-        </Tabs>
+          <List disablePadding>
+            {MENU_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
 
-        <Box className="px-4 pb-6 sm:px-6">
-          <TabPanel value={activeTab} index={0}>
-            <ProfileInfo profile={profile} isRefreshing={isFetching} onProfileUpdated={refetch} />
-          </TabPanel>
-          <TabPanel value={activeTab} index={1}>
-            <ProfileOrders orders={profile.orders} isRefreshing={isFetching} />
-          </TabPanel>
+              return (
+                <ListItemButton
+                  key={item.id}
+                  selected={isActive}
+                  onClick={() => setActiveTab(item.id)}
+                  sx={{
+                    minHeight: 46,
+                    borderRadius: "10px",
+                    mb: 0.5,
+
+                    "&.Mui-selected": {
+                      backgroundColor: isDark
+                        ? "rgba(219,68,68,0.12)"
+                        : "rgba(219,68,68,0.08)",
+                    },
+
+                    "&.Mui-selected:hover": {
+                      backgroundColor: isDark
+                        ? "rgba(219,68,68,0.18)"
+                        : "rgba(219,68,68,0.12)",
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 38,
+                      color: isActive
+                        ? PRIMARY_COLOR
+                        : isDark
+                          ? "#94a3b8"
+                          : "#71717a",
+                    }}
+                  >
+                    <Icon fontSize="small" />
+                  </ListItemIcon>
+
+                  <ListItemText
+                    primary={t(item.label, {
+                      defaultValue: item.fallback,
+                    })}
+                    primaryTypographyProps={{
+                      fontSize: "0.875rem",
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive
+                        ? PRIMARY_COLOR
+                        : isDark
+                          ? "#cbd5e1"
+                          : "#52525b",
+                    }}
+                  />
+                </ListItemButton>
+              );
+            })}
+          </List>
         </Box>
-      </Box>
+
+        {/* Content */}
+        <Box
+          className={`min-w-0 rounded-2xl border ${
+            isDark
+              ? "border-slate-700 bg-slate-900"
+              : "border-zinc-200 bg-white"
+          }`}
+        >
+          <div className="p-5 sm:p-7">
+            {activeTab === "account" && (
+              <ProfileInfo
+                profile={profile}
+                isRefreshing={isFetching}
+                onProfileUpdated={refetch}
+              />
+            )}
+
+            {activeTab === "orders" && (
+              <ProfileOrders
+                orders={profile?.orders || []}
+                isRefreshing={isFetching}
+              />
+            )}
+
+            {activeTab === "settings" && (
+              <ProfileSettings onProfileUpdated={refetch} />
+            )}
+          </div>
+        </Box>
+      </div>
     </section>
   );
 }

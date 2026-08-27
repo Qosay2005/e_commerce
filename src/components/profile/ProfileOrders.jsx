@@ -1,159 +1,408 @@
-import React from 'react';
-import { Button, Chip, Typography } from '@mui/material';
-import { ReceiptLongOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
-import useThemeStore from '../../hocks/useThemeStore';
+import React, { useEffect, useState } from "react";
 
-const STATUS_COLORS = {
-  processing: { bg: '#fef3c7', text: '#92400e', darkBg: 'rgba(251,191,36,0.15)', darkText: '#fbbf24' },
-  shipped: { bg: '#dbeafe', text: '#1e40af', darkBg: 'rgba(59,130,246,0.15)', darkText: '#60a5fa' },
-  delivered: { bg: '#dcfce7', text: '#166534', darkBg: 'rgba(34,197,94,0.15)', darkText: '#4ade80' },
-  cancelled: { bg: '#fee2e2', text: '#991b1b', darkBg: 'rgba(239,68,68,0.15)', darkText: '#f87171' },
+import {
+  Alert,
+  Button,
+  CircularProgress,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
+
+import {
+  EditOutlined,
+  EmailOutlined,
+  PersonOutlineOutlined,
+  PhoneOutlined,
+} from "@mui/icons-material";
+
+import { useTranslation } from "react-i18next";
+import PropTypes from "prop-types";
+
+import { useUpdateProfile } from "../../hocks/useProfile";
+import useThemeStore from "../../hocks/useThemeStore";
+
+function ProfileField({ label, value, icon: Icon, isDark }) {
+  return (
+    <div
+      className={`rounded-xl border p-4 ${
+        isDark
+          ? "border-slate-700 bg-slate-800/50"
+          : "border-zinc-200 bg-zinc-50/70"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <Icon
+          sx={{
+            color: isDark ? "#94a3b8" : "#71717a",
+            fontSize: 21,
+            mt: 0.2,
+          }}
+        />
+
+        <div className="min-w-0 flex-1">
+          <Typography
+            variant="caption"
+            className={`block font-semibold ${
+              isDark ? "text-slate-400" : "text-zinc-500"
+            }`}
+          >
+            {label}
+          </Typography>
+
+          <Typography
+            variant="body1"
+            className={`mt-1 break-words font-semibold ${
+              isDark ? "text-slate-100" : "text-zinc-900"
+            }`}
+          >
+            {value || "—"}
+          </Typography>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ProfileField.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string,
+  icon: PropTypes.elementType.isRequired,
+  isDark: PropTypes.bool.isRequired,
 };
 
-function formatOrderTotal(total) {
-  if (total == null || total === '') return '$0.00';
-  if (typeof total === 'number') return `$${total.toFixed(2)}`;
-  const numeric = Number(String(total).replace(/[^0-9.-]/g, ''));
-  if (!Number.isNaN(numeric)) return `$${numeric.toFixed(2)}`;
-  return String(total);
-}
+export default function ProfileInfo({
+  profile,
+  isRefreshing,
+  onProfileUpdated,
+}) {
+  const { t } = useTranslation();
 
-function formatOrderDate(dateValue, language) {
-  if (!dateValue) return null;
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString(language?.startsWith('ar') ? 'ar-EG' : 'en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function getStatusKey(status) {
-  const normalized = String(status || 'processing').toLowerCase();
-  if (normalized.includes('ship')) return 'shipped';
-  if (normalized.includes('deliver')) return 'delivered';
-  if (normalized.includes('cancel')) return 'cancelled';
-  return 'processing';
-}
-
-export default function ProfileOrders({ orders, isRefreshing }) {
-  const { t, i18n } = useTranslation();
   const mode = useThemeStore((state) => state.mode);
-  const isDark = mode === 'dark';
+  const isDark = mode === "dark";
+
+  const {
+    mutate: updateProfile,
+    isPending,
+    isSuccess,
+    isError,
+    error,
+    reset,
+  } = useUpdateProfile();
+
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [form, setForm] = useState({
+    fullName: profile?.fullName || "",
+    phone: profile?.phone || "",
+  });
+
+  useEffect(() => {
+    if (!isEditing) {
+      setForm({
+        fullName: profile?.fullName || "",
+        phone: profile?.phone || "",
+      });
+    }
+  }, [profile?.fullName, profile?.phone, isEditing]);
+
+  const handleChange = (field) => (event) => {
+    reset();
+
+    setForm((prev) => ({
+      ...prev,
+      [field]: event.target.value,
+    }));
+  };
+
+  const handleEdit = () => {
+    reset();
+
+    setForm({
+      fullName: profile?.fullName || "",
+      phone: profile?.phone || "",
+    });
+
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    reset();
+
+    setForm({
+      fullName: profile?.fullName || "",
+      phone: profile?.phone || "",
+    });
+
+    setIsEditing(false);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    updateProfile(
+      {
+        fullName: form.fullName.trim(),
+        phoneNumber: form.phone.trim(),
+      },
+      {
+        onSuccess: async () => {
+          await onProfileUpdated?.();
+          setIsEditing(false);
+        },
+      }
+    );
+  };
+
+  const textFieldSx = {
+    "& .MuiInputLabel-root": {
+      color: isDark ? "#94a3b8" : "#71717a",
+    },
+
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "#DB4444",
+    },
+
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "10px",
+      backgroundColor: isDark ? "#0f172a" : "#fafafa",
+      color: isDark ? "#f8fafc" : "#18181b",
+
+      "& fieldset": {
+        borderColor: isDark ? "#334155" : "#d4d4d8",
+      },
+
+      "&:hover fieldset": {
+        borderColor: "#DB4444",
+      },
+
+      "&.Mui-focused fieldset": {
+        borderColor: "#DB4444",
+      },
+    },
+  };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Typography variant="h6" className={`font-bold ${isDark ? 'text-slate-100' : 'text-zinc-900'}`}>
-          {t('profile.orders.title')}
-        </Typography>
-        {isRefreshing ? (
-          <Typography variant="caption" className={isDark ? 'text-slate-500' : 'text-zinc-500'}>
-            {t('status.loading')}
+        <div>
+          <Typography
+            variant="h6"
+            className={`font-bold ${
+              isDark ? "text-slate-100" : "text-zinc-900"
+            }`}
+          >
+            {t("profile.info.title", {
+              defaultValue: "Personal Details",
+            })}
           </Typography>
-        ) : null}
+
+          <Typography
+            variant="body2"
+            className={`mt-1 ${
+              isDark ? "text-slate-400" : "text-zinc-500"
+            }`}
+          >
+            {t("profile.info.description", {
+              defaultValue: "View and manage your personal information",
+            })}
+          </Typography>
+        </div>
+
+        {!isEditing && (
+          <Button
+            variant="outlined"
+            startIcon={<EditOutlined fontSize="small" />}
+            onClick={handleEdit}
+            disabled={isRefreshing}
+            sx={{
+              borderRadius: "10px",
+              borderColor: isDark ? "#475569" : "#d4d4d8",
+              color: isDark ? "#f8fafc" : "#18181b",
+              textTransform: "none",
+              fontWeight: 700,
+
+              "&:hover": {
+                borderColor: "#DB4444",
+                color: "#DB4444",
+              },
+            }}
+          >
+            {t("profile.info.editProfile", {
+              defaultValue: "Edit Profile",
+            })}
+          </Button>
+        )}
       </div>
 
-      {orders.length === 0 ? (
-        <div
-          className={`rounded-[20px] border border-dashed p-10 text-center ${
-            isDark ? 'border-slate-600 bg-slate-900/40' : 'border-zinc-200 bg-zinc-50'
-          }`}
-        >
-          <div className="flex flex-col items-center gap-3">
-            <ReceiptLongOutlined sx={{ fontSize: 40 }} className={isDark ? 'text-slate-600' : 'text-zinc-300'} />
-            <Typography variant="body1" className={isDark ? 'text-slate-400' : 'text-zinc-500'}>
-              {t('profile.orders.noOrders')}
-            </Typography>
+      {/* Alerts */}
+      {isSuccess && !isEditing && (
+        <Alert severity="success" onClose={reset}>
+          {t("profile.info.changesSaved", {
+            defaultValue: "Changes saved successfully",
+          })}
+        </Alert>
+      )}
+
+      {isError && (
+        <Alert severity="error" onClose={reset}>
+          {error?.response?.data?.message ||
+            error?.response?.data?.errors?.[0] ||
+            error?.message ||
+            "Failed to update profile"}
+        </Alert>
+      )}
+
+      {/* Edit */}
+      {isEditing ? (
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label={t("profile.info.fullName", {
+                defaultValue: "Full Name",
+              })}
+              value={form.fullName}
+              onChange={handleChange("fullName")}
+              fullWidth
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonOutlineOutlined
+                      sx={{
+                        color: isDark ? "#64748b" : "#71717a",
+                      }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+              sx={textFieldSx}
+            />
+
+            <TextField
+              label={t("profile.info.phone", {
+                defaultValue: "Phone Number",
+              })}
+              value={form.phone}
+              onChange={handleChange("phone")}
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PhoneOutlined
+                      sx={{
+                        color: isDark ? "#64748b" : "#71717a",
+                      }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+              sx={textFieldSx}
+            />
+          </div>
+
+          <div className="flex gap-3">
             <Button
-              component={Link}
-              to="/shop"
+              type="submit"
               variant="contained"
+              disabled={isPending || isRefreshing}
               sx={{
-                mt: 1,
-                borderRadius: '12px',
-                backgroundColor: '#DB4444',
-                textTransform: 'none',
+                borderRadius: "10px",
+                backgroundColor: "#DB4444",
+                textTransform: "none",
                 fontWeight: 700,
-                boxShadow: 'none',
-                '&:hover': { backgroundColor: '#c23a3a' },
+                px: 3,
+                boxShadow: "none",
+
+                "&:hover": {
+                  backgroundColor: "#c53d3d",
+                  boxShadow: "none",
+                },
               }}
             >
-              {t('profile.orders.shopMore')}
+              {isPending ? (
+                <span className="flex items-center gap-2">
+                  <CircularProgress size={16} sx={{ color: "#fff" }} />
+                  Saving...
+                </span>
+              ) : (
+                t("profile.info.saveChanges", {
+                  defaultValue: "Save Changes",
+                })
+              )}
+            </Button>
+
+            <Button
+              type="button"
+              variant="outlined"
+              onClick={handleCancel}
+              disabled={isPending}
+              sx={{
+                borderRadius: "10px",
+                borderColor: isDark ? "#475569" : "#d4d4d8",
+                color: isDark ? "#f8fafc" : "#18181b",
+                textTransform: "none",
+                fontWeight: 700,
+              }}
+            >
+              {t("profile.info.cancel", {
+                defaultValue: "Cancel",
+              })}
             </Button>
           </div>
-        </div>
+        </form>
       ) : (
-        <div className="space-y-3">
-          {orders.map((order, index) => {
-            const orderId = order?.id ?? order?.orderId ?? index + 1;
-            const statusKey = getStatusKey(order?.status);
-            const statusColors = STATUS_COLORS[statusKey];
-            const formattedDate = formatOrderDate(
-              order?.date || order?.createdAt || order?.orderDate,
-              i18n.language,
-            );
+        /* Information */
+        <div
+          className={`grid gap-4 sm:grid-cols-2 ${
+            isRefreshing ? "opacity-70" : ""
+          }`}
+        >
+          <ProfileField
+            label={t("profile.info.fullName", {
+              defaultValue: "Full Name",
+            })}
+            value={profile?.fullName}
+            icon={PersonOutlineOutlined}
+            isDark={isDark}
+          />
 
-            return (
-              <div
-                key={orderId}
-                className={`rounded-[16px] border p-4 transition ${
-                  isDark
-                    ? 'border-slate-700 bg-slate-900/50 hover:border-slate-600'
-                    : 'border-zinc-200 bg-zinc-50 hover:border-zinc-300'
-                } ${isRefreshing ? 'opacity-80' : ''}`}
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="space-y-1">
-                    <Typography variant="subtitle1" className={`font-bold ${isDark ? 'text-slate-100' : 'text-zinc-900'}`}>
-                      {t('profile.orders.orderId', { id: orderId })}
-                    </Typography>
-                    {formattedDate ? (
-                      <Typography variant="body2" className={isDark ? 'text-slate-400' : 'text-zinc-500'}>
-                        {t('profile.orders.date')}: {formattedDate}
-                      </Typography>
-                    ) : null}
-                  </div>
+          <ProfileField
+            label={t("profile.info.email", {
+              defaultValue: "Email",
+            })}
+            value={profile?.email}
+            icon={EmailOutlined}
+            isDark={isDark}
+          />
 
-                  <Chip
-                    label={t(`profile.orders.${statusKey}`)}
-                    size="small"
-                    sx={{
-                      alignSelf: 'flex-start',
-                      fontWeight: 700,
-                      backgroundColor: isDark ? statusColors.darkBg : statusColors.bg,
-                      color: isDark ? statusColors.darkText : statusColors.text,
-                    }}
-                  />
-                </div>
-
-                <div className={`mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3 ${isDark ? 'border-slate-700' : 'border-zinc-200'}`}>
-                  <Typography variant="body2" className={isDark ? 'text-slate-400' : 'text-zinc-600'}>
-                    {t('profile.orders.status')}: {t(`profile.orders.${statusKey}`)}
-                  </Typography>
-                  <Typography variant="subtitle1" className="font-extrabold text-[#DB4444]">
-                    {t('profile.orders.total')}: {formatOrderTotal(order?.total ?? order?.totalPrice ?? order?.amount)}
-                  </Typography>
-                </div>
-              </div>
-            );
-          })}
+          <ProfileField
+            label={t("profile.info.phone", {
+              defaultValue: "Phone Number",
+            })}
+            value={profile?.phone}
+            icon={PhoneOutlined}
+            isDark={isDark}
+          />
         </div>
       )}
     </div>
   );
 }
 
-ProfileOrders.propTypes = {
-  orders: PropTypes.arrayOf(PropTypes.object),
+ProfileInfo.propTypes = {
+  profile: PropTypes.shape({
+    fullName: PropTypes.string,
+    email: PropTypes.string,
+    phone: PropTypes.string,
+  }).isRequired,
+
   isRefreshing: PropTypes.bool,
+  onProfileUpdated: PropTypes.func,
 };
 
-ProfileOrders.defaultProps = {
-  orders: [],
+ProfileInfo.defaultProps = {
   isRefreshing: false,
+  onProfileUpdated: undefined,
 };
