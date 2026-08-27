@@ -1,185 +1,95 @@
-import React, { useEffect, useState } from "react";
+
+import React from "react";
+import PropTypes from "prop-types";
 
 import {
-  Alert,
-  Button,
+  Chip,
   CircularProgress,
-  InputAdornment,
-  TextField,
+  Divider,
   Typography,
 } from "@mui/material";
 
 import {
-  EditOutlined,
-  EmailOutlined,
-  PersonOutlineOutlined,
-  PhoneOutlined,
+  CalendarTodayOutlined,
+  CheckCircleOutlineOutlined,
+  PaymentsOutlined,
+  ReceiptLongOutlined,
 } from "@mui/icons-material";
 
 import { useTranslation } from "react-i18next";
-import PropTypes from "prop-types";
-
-import { useUpdateProfile } from "../../hocks/useProfile";
 import useThemeStore from "../../hocks/useThemeStore";
 
-function ProfileField({ label, value, icon: Icon, isDark }) {
-  return (
-    <div
-      className={`rounded-xl border p-4 ${
-        isDark
-          ? "border-slate-700 bg-slate-800/50"
-          : "border-zinc-200 bg-zinc-50/70"
-      }`}
-    >
-      <div className="flex items-start gap-3">
-        <Icon
-          sx={{
-            color: isDark ? "#94a3b8" : "#71717a",
-            fontSize: 21,
-            mt: 0.2,
-          }}
-        />
+const PRIMARY_COLOR = "#DB4444";
 
-        <div className="min-w-0 flex-1">
-          <Typography
-            variant="caption"
-            className={`block font-semibold ${
-              isDark ? "text-slate-400" : "text-zinc-500"
-            }`}
-          >
-            {label}
-          </Typography>
-
-          <Typography
-            variant="body1"
-            className={`mt-1 break-words font-semibold ${
-              isDark ? "text-slate-100" : "text-zinc-900"
-            }`}
-          >
-            {value || "—"}
-          </Typography>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-ProfileField.propTypes = {
-  label: PropTypes.string.isRequired,
-  value: PropTypes.string,
-  icon: PropTypes.elementType.isRequired,
-  isDark: PropTypes.bool.isRequired,
-};
-
-export default function ProfileInfo({
-  profile,
-  isRefreshing,
-  onProfileUpdated,
-}) {
+export default function ProfileOrders({ orders, isRefreshing }) {
   const { t } = useTranslation();
 
   const mode = useThemeStore((state) => state.mode);
   const isDark = mode === "dark";
 
-  const {
-    mutate: updateProfile,
-    isPending,
-    isSuccess,
-    isError,
-    error,
-    reset,
-  } = useUpdateProfile();
-
-  const [isEditing, setIsEditing] = useState(false);
-
-  const [form, setForm] = useState({
-    fullName: profile?.fullName || "",
-    phone: profile?.phone || "",
+  // ترتيب الطلبات من الأحدث إلى الأقدم
+  const sortedOrders = [...orders].sort((a, b) => {
+    return new Date(b.orderDate) - new Date(a.orderDate);
   });
 
-  useEffect(() => {
-    if (!isEditing) {
-      setForm({
-        fullName: profile?.fullName || "",
-        phone: profile?.phone || "",
-      });
+  // تنسيق التاريخ
+  const formatDate = (date) => {
+    if (!date) return "—";
+
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date));
+  };
+
+  // تحديد لون حالة الطلب
+  const getOrderStatusColor = (status) => {
+    const normalizedStatus = status?.toLowerCase();
+
+    if (normalizedStatus === "active") {
+      return "success";
     }
-  }, [profile?.fullName, profile?.phone, isEditing]);
 
-  const handleChange = (field) => (event) => {
-    reset();
+    if (normalizedStatus === "pending") {
+      return "warning";
+    }
 
-    setForm((prev) => ({
-      ...prev,
-      [field]: event.target.value,
-    }));
+    if (normalizedStatus === "cancelled") {
+      return "error";
+    }
+
+    return "default";
   };
 
-  const handleEdit = () => {
-    reset();
+  // تحديد لون حالة الدفع
+  const getPaymentStatusColor = (status) => {
+    const normalizedStatus = status?.toLowerCase();
 
-    setForm({
-      fullName: profile?.fullName || "",
-      phone: profile?.phone || "",
-    });
+    if (normalizedStatus === "paid") {
+      return "success";
+    }
 
-    setIsEditing(true);
+    if (normalizedStatus === "unpaid") {
+      return "error";
+    }
+
+    if (normalizedStatus === "pending") {
+      return "warning";
+    }
+
+    return "default";
   };
 
-  const handleCancel = () => {
-    reset();
+  // النص الذي سيظهر لحالة الدفع
+  const getPaymentStatusLabel = (status) => {
+    if (!status) {
+      return "Not specified";
+    }
 
-    setForm({
-      fullName: profile?.fullName || "",
-      phone: profile?.phone || "",
-    });
-
-    setIsEditing(false);
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    updateProfile(
-      {
-        fullName: form.fullName.trim(),
-        phoneNumber: form.phone.trim(),
-      },
-      {
-        onSuccess: async () => {
-          await onProfileUpdated?.();
-          setIsEditing(false);
-        },
-      }
-    );
-  };
-
-  const textFieldSx = {
-    "& .MuiInputLabel-root": {
-      color: isDark ? "#94a3b8" : "#71717a",
-    },
-
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: "#DB4444",
-    },
-
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "10px",
-      backgroundColor: isDark ? "#0f172a" : "#fafafa",
-      color: isDark ? "#f8fafc" : "#18181b",
-
-      "& fieldset": {
-        borderColor: isDark ? "#334155" : "#d4d4d8",
-      },
-
-      "&:hover fieldset": {
-        borderColor: "#DB4444",
-      },
-
-      "&.Mui-focused fieldset": {
-        borderColor: "#DB4444",
-      },
-    },
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   return (
@@ -193,8 +103,8 @@ export default function ProfileInfo({
               isDark ? "text-slate-100" : "text-zinc-900"
             }`}
           >
-            {t("profile.info.title", {
-              defaultValue: "Personal Details",
+            {t("profile.orders.title", {
+              defaultValue: "My Orders",
             })}
           </Typography>
 
@@ -204,205 +114,226 @@ export default function ProfileInfo({
               isDark ? "text-slate-400" : "text-zinc-500"
             }`}
           >
-            {t("profile.info.description", {
-              defaultValue: "View and manage your personal information",
+            {t("profile.orders.description", {
+              defaultValue: "View your order history and payment details",
             })}
           </Typography>
         </div>
 
-        {!isEditing && (
-          <Button
-            variant="outlined"
-            startIcon={<EditOutlined fontSize="small" />}
-            onClick={handleEdit}
-            disabled={isRefreshing}
-            sx={{
-              borderRadius: "10px",
-              borderColor: isDark ? "#475569" : "#d4d4d8",
-              color: isDark ? "#f8fafc" : "#18181b",
-              textTransform: "none",
-              fontWeight: 700,
-
-              "&:hover": {
-                borderColor: "#DB4444",
-                color: "#DB4444",
-              },
-            }}
-          >
-            {t("profile.info.editProfile", {
-              defaultValue: "Edit Profile",
-            })}
-          </Button>
-        )}
+        {/* عدد الطلبات */}
+        <Chip
+          label={`${orders.length} ${
+            orders.length === 1 ? "Order" : "Orders"
+          }`}
+          sx={{
+            fontWeight: 700,
+            backgroundColor: isDark
+              ? "rgba(219, 68, 68, 0.15)"
+              : "rgba(219, 68, 68, 0.08)",
+            color: PRIMARY_COLOR,
+          }}
+        />
       </div>
 
-      {/* Alerts */}
-      {isSuccess && !isEditing && (
-        <Alert severity="success" onClose={reset}>
-          {t("profile.info.changesSaved", {
-            defaultValue: "Changes saved successfully",
-          })}
-        </Alert>
-      )}
+      <Divider
+        sx={{
+          borderColor: isDark ? "#334155" : "#e4e4e7",
+        }}
+      />
 
-      {isError && (
-        <Alert severity="error" onClose={reset}>
-          {error?.response?.data?.message ||
-            error?.response?.data?.errors?.[0] ||
-            error?.message ||
-            "Failed to update profile"}
-        </Alert>
-      )}
-
-      {/* Edit */}
-      {isEditing ? (
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TextField
-              label={t("profile.info.fullName", {
-                defaultValue: "Full Name",
-              })}
-              value={form.fullName}
-              onChange={handleChange("fullName")}
-              fullWidth
-              required
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonOutlineOutlined
-                      sx={{
-                        color: isDark ? "#64748b" : "#71717a",
-                      }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-              sx={textFieldSx}
-            />
-
-            <TextField
-              label={t("profile.info.phone", {
-                defaultValue: "Phone Number",
-              })}
-              value={form.phone}
-              onChange={handleChange("phone")}
-              fullWidth
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PhoneOutlined
-                      sx={{
-                        color: isDark ? "#64748b" : "#71717a",
-                      }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-              sx={textFieldSx}
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={isPending || isRefreshing}
-              sx={{
-                borderRadius: "10px",
-                backgroundColor: "#DB4444",
-                textTransform: "none",
-                fontWeight: 700,
-                px: 3,
-                boxShadow: "none",
-
-                "&:hover": {
-                  backgroundColor: "#c53d3d",
-                  boxShadow: "none",
-                },
-              }}
-            >
-              {isPending ? (
-                <span className="flex items-center gap-2">
-                  <CircularProgress size={16} sx={{ color: "#fff" }} />
-                  Saving...
-                </span>
-              ) : (
-                t("profile.info.saveChanges", {
-                  defaultValue: "Save Changes",
-                })
-              )}
-            </Button>
-
-            <Button
-              type="button"
-              variant="outlined"
-              onClick={handleCancel}
-              disabled={isPending}
-              sx={{
-                borderRadius: "10px",
-                borderColor: isDark ? "#475569" : "#d4d4d8",
-                color: isDark ? "#f8fafc" : "#18181b",
-                textTransform: "none",
-                fontWeight: 700,
-              }}
-            >
-              {t("profile.info.cancel", {
-                defaultValue: "Cancel",
-              })}
-            </Button>
-          </div>
-        </form>
-      ) : (
-        /* Information */
+      {/* Loading */}
+      {isRefreshing && orders.length === 0 ? (
+        <div className="flex justify-center py-12">
+          <CircularProgress sx={{ color: PRIMARY_COLOR }} />
+        </div>
+      ) : sortedOrders.length === 0 ? (
+        /* Empty State */
         <div
-          className={`grid gap-4 sm:grid-cols-2 ${
+          className={`flex flex-col items-center justify-center rounded-xl border py-14 text-center ${
+            isDark
+              ? "border-slate-700 bg-slate-800/50"
+              : "border-zinc-200 bg-zinc-50/70"
+          }`}
+        >
+          <ReceiptLongOutlined
+            sx={{
+              fontSize: 52,
+              color: isDark ? "#64748b" : "#a1a1aa",
+            }}
+          />
+
+          <Typography
+            variant="h6"
+            className={`mt-4 font-bold ${
+              isDark ? "text-slate-200" : "text-zinc-800"
+            }`}
+          >
+            {t("profile.orders.emptyTitle", {
+              defaultValue: "No orders yet",
+            })}
+          </Typography>
+
+          <Typography
+            variant="body2"
+            className={`mt-1 ${
+              isDark ? "text-slate-400" : "text-zinc-500"
+            }`}
+          >
+            {t("profile.orders.emptyDescription", {
+              defaultValue:
+                "Your orders will appear here once you make a purchase.",
+            })}
+          </Typography>
+        </div>
+      ) : (
+        /* Orders List */
+        <div
+          className={`space-y-3 transition-opacity ${
             isRefreshing ? "opacity-70" : ""
           }`}
         >
-          <ProfileField
-            label={t("profile.info.fullName", {
-              defaultValue: "Full Name",
-            })}
-            value={profile?.fullName}
-            icon={PersonOutlineOutlined}
-            isDark={isDark}
-          />
+          {sortedOrders.map((order) => (
+            <div
+              key={order.id}
+              className={`rounded-xl border p-4 ${
+                isDark
+                  ? "border-slate-700 bg-slate-800/50"
+                  : "border-zinc-200 bg-zinc-50/70"
+              }`}
+            >
+              {/* الجزء العلوي من الطلب */}
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-full ${
+                      isDark ? "bg-slate-700" : "bg-red-50"
+                    }`}
+                  >
+                    <ReceiptLongOutlined sx={{ color: PRIMARY_COLOR }} />
+                  </div>
 
-          <ProfileField
-            label={t("profile.info.email", {
-              defaultValue: "Email",
-            })}
-            value={profile?.email}
-            icon={EmailOutlined}
-            isDark={isDark}
-          />
+                  <div>
+                    <Typography
+                      variant="subtitle1"
+                      className={`font-bold ${
+                        isDark ? "text-slate-100" : "text-zinc-900"
+                      }`}
+                    >
+                      Order #{order.id}
+                    </Typography>
 
-          <ProfileField
-            label={t("profile.info.phone", {
-              defaultValue: "Phone Number",
-            })}
-            value={profile?.phone}
-            icon={PhoneOutlined}
-            isDark={isDark}
-          />
+                    <div className="mt-1 flex items-center gap-1">
+                      <CalendarTodayOutlined
+                        sx={{
+                          fontSize: 14,
+                          color: isDark ? "#94a3b8" : "#71717a",
+                        }}
+                      />
+
+                      <Typography
+                        variant="caption"
+                        className={
+                          isDark ? "text-slate-400" : "text-zinc-500"
+                        }
+                      >
+                        {formatDate(order.orderDate)}
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+
+                {/* حالة الطلب */}
+                <Chip
+                  icon={<CheckCircleOutlineOutlined />}
+                  label={order.status || "Unknown"}
+                  color={getOrderStatusColor(order.status)}
+                  size="small"
+                  sx={{ fontWeight: 700 }}
+                />
+              </div>
+
+              <Divider
+                sx={{
+                  my: 2,
+                  borderColor: isDark ? "#334155" : "#e4e4e7",
+                }}
+              />
+
+              {/* تفاصيل الدفع */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* المبلغ المدفوع */}
+                <div className="flex items-center gap-3">
+                  <PaymentsOutlined
+                    sx={{
+                      color: isDark ? "#94a3b8" : "#71717a",
+                    }}
+                  />
+
+                  <div>
+                    <Typography
+                      variant="caption"
+                      className={`block ${
+                        isDark ? "text-slate-400" : "text-zinc-500"
+                      }`}
+                    >
+                      {t("profile.orders.amountPaid", {
+                        defaultValue: "Amount Paid",
+                      })}
+                    </Typography>
+
+                    <Typography
+                      variant="body1"
+                      className={`font-bold ${
+                        isDark ? "text-slate-100" : "text-zinc-900"
+                      }`}
+                    >
+                      {order.amountPaid ?? 0}
+                    </Typography>
+                  </div>
+                </div>
+
+                {/* حالة الدفع */}
+                <div className="flex items-center justify-between gap-3">
+                  <Typography
+                    variant="body2"
+                    className={isDark ? "text-slate-400" : "text-zinc-500"}
+                  >
+                    {t("profile.orders.paymentStatus", {
+                      defaultValue: "Payment Status",
+                    })}
+                  </Typography>
+
+                  <Chip
+                    label={getPaymentStatusLabel(order.paymentStatus)}
+                    color={getPaymentStatusColor(order.paymentStatus)}
+                    size="small"
+                    variant="outlined"
+                    sx={{ fontWeight: 700 }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-ProfileInfo.propTypes = {
-  profile: PropTypes.shape({
-    fullName: PropTypes.string,
-    email: PropTypes.string,
-    phone: PropTypes.string,
-  }).isRequired,
-
+ProfileOrders.propTypes = {
+  orders: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      amountPaid: PropTypes.number,
+      paymentStatus: PropTypes.string,
+      status: PropTypes.string,
+      orderDate: PropTypes.string,
+    })
+  ),
   isRefreshing: PropTypes.bool,
-  onProfileUpdated: PropTypes.func,
 };
 
-ProfileInfo.defaultProps = {
+ProfileOrders.defaultProps = {
+  orders: [],
   isRefreshing: false,
-  onProfileUpdated: undefined,
 };
