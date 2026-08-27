@@ -1,10 +1,10 @@
 import React, { useState } from "react";
+
 import {
   Alert,
   Box,
   Button,
   CircularProgress,
-  Divider,
   List,
   ListItemButton,
   ListItemIcon,
@@ -58,7 +58,14 @@ export default function ProfileLayout() {
 
   const [activeTab, setActiveTab] = useState("account");
 
-  const { data: profile,  isLoading,  isError,  error, refetch, isFetching,} = useProfile();
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useProfile();
 
   if (isLoading) {
     return (
@@ -67,10 +74,9 @@ export default function ProfileLayout() {
       </div>
     );
   }
-
   if (isError) {
     return (
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <Alert
           severity="error"
           action={
@@ -88,10 +94,10 @@ export default function ProfileLayout() {
       </section>
     );
   }
- {console.log(profile)}
+
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8">
+    <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <div className="mb-6 sm:mb-8">
         <Typography
           component="h1"
           variant="h4"
@@ -114,8 +120,7 @@ export default function ProfileLayout() {
         </Typography>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[210px_1fr]">
-        {/* Sidebar */}
+      <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:gap-6">
         <Box
           className={`h-fit rounded-2xl border p-2 ${
             isDark
@@ -123,7 +128,10 @@ export default function ProfileLayout() {
               : "border-zinc-200 bg-white"
           }`}
         >
-          <List disablePadding>
+          <List
+            disablePadding
+            className="flex min-w-max gap-1 overflow-x-auto md:block md:min-w-0"
+          >
             {MENU_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -136,24 +144,32 @@ export default function ProfileLayout() {
                   sx={{
                     minHeight: 46,
                     borderRadius: "10px",
-                    mb: 0.5,
+                    flexShrink: 0,
+                    px: { xs: 1.5, md: 1.5 },
+                    mb: { md: 0.5 },
 
                     "&.Mui-selected": {
                       backgroundColor: isDark
-                        ? "rgba(219,68,68,0.12)"
-                        : "rgba(219,68,68,0.08)",
+                        ? "rgba(219, 68, 68, 0.14)"
+                        : "rgba(219, 68, 68, 0.08)",
                     },
 
                     "&.Mui-selected:hover": {
                       backgroundColor: isDark
-                        ? "rgba(219,68,68,0.18)"
-                        : "rgba(219,68,68,0.12)",
+                        ? "rgba(219, 68, 68, 0.20)"
+                        : "rgba(219, 68, 68, 0.13)",
+                    },
+
+                    "&:hover": {
+                      backgroundColor: isDark
+                        ? "rgba(148, 163, 184, 0.08)"
+                        : "rgba(0, 0, 0, 0.03)",
                     },
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: 38,
+                      minWidth: { xs: 30, md: 38 },
                       color: isActive
                         ? PRIMARY_COLOR
                         : isDark
@@ -169,7 +185,11 @@ export default function ProfileLayout() {
                       defaultValue: item.fallback,
                     })}
                     primaryTypographyProps={{
-                      fontSize: "0.875rem",
+                      fontSize: {
+                        xs: "0.82rem",
+                        md: "0.875rem",
+                      },
+                      whiteSpace: "nowrap",
                       fontWeight: isActive ? 700 : 500,
                       color: isActive
                         ? PRIMARY_COLOR
@@ -184,7 +204,6 @@ export default function ProfileLayout() {
           </List>
         </Box>
 
-        {/* Content */}
         <Box
           className={`min-w-0 rounded-2xl border ${
             isDark
@@ -192,7 +211,7 @@ export default function ProfileLayout() {
               : "border-zinc-200 bg-white"
           }`}
         >
-          <div className="p-5 sm:p-7">
+          <div className="p-4 sm:p-6 lg:p-7">
             {activeTab === "account" && (
               <ProfileInfo
                 profile={profile}
@@ -209,7 +228,7 @@ export default function ProfileLayout() {
             )}
 
             {activeTab === "settings" && (
-              <ProfileSettings onProfileUpdated={refetch} />
+              <ProfileSettings profile={profile} onProfileUpdated={refetch} />
             )}
           </div>
         </Box>

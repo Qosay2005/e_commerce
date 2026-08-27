@@ -1,105 +1,121 @@
-import React, { useState } from "react";
 
+import React, { useState } from "react";
 import {
   Alert,
+  Box,
   Button,
   CircularProgress,
-  Divider,
+  IconButton,
   InputAdornment,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
-
 import {
   EmailOutlined,
   LockOutlined,
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
-
-import { useTranslation } from "react-i18next";
 import PropTypes from "prop-types";
-
 import {
   useChangeEmail,
   useChangePassword,
 } from "../../hocks/useProfile";
-
 import useThemeStore from "../../hocks/useThemeStore";
 
 const PRIMARY_COLOR = "#DB4444";
 
-export default function ProfileSettings({ onProfileUpdated }) {
-  const { t } = useTranslation();
-
+export default function ProfileSettings({ profile, onProfileUpdated }) {
   const mode = useThemeStore((state) => state.mode);
   const isDark = mode === "dark";
 
+  const [activeTab, setActiveTab] = useState(0);
   const [email, setEmail] = useState("");
-
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",
     confirmNewPassword: "",
   });
-
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [visiblePasswords, setVisiblePasswords] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmNewPassword: false,
+  });
 
   const emailMutation = useChangeEmail();
   const passwordMutation = useChangePassword();
+
+  const iconColor = isDark ? "#64748b" : "#71717a";
 
   const textFieldSx = {
     "& .MuiInputLabel-root": {
       color: isDark ? "#94a3b8" : "#71717a",
     },
-
     "& .MuiInputLabel-root.Mui-focused": {
       color: PRIMARY_COLOR,
     },
-
     "& .MuiOutlinedInput-root": {
-      borderRadius: "10px",
+      borderRadius: "12px",
       backgroundColor: isDark ? "#0f172a" : "#fafafa",
       color: isDark ? "#f8fafc" : "#18181b",
-
       "& fieldset": {
         borderColor: isDark ? "#334155" : "#d4d4d8",
       },
-
       "&:hover fieldset": {
         borderColor: PRIMARY_COLOR,
       },
-
       "&.Mui-focused fieldset": {
         borderColor: PRIMARY_COLOR,
       },
     },
   };
 
-  const getErrorMessage = (error, fallback) => {
-    return (
-      error?.response?.data?.message ||
-      error?.response?.data?.errors?.[0] ||
-      error?.message ||
-      fallback
-    );
+  const visibilityButtonSx = {
+    color: isDark ? "#94a3b8" : "#71717a",
+    "&:hover": {
+      backgroundColor: isDark
+        ? "rgba(148, 163, 184, 0.08)"
+        : "rgba(0, 0, 0, 0.04)",
+    },
+  };
+
+  const getErrorMessage = (error, fallback) =>
+    error?.response?.data?.message ||
+    error?.response?.data?.errors?.[0] ||
+    error?.message ||
+    fallback;
+
+  const handleTabChange = (_, value) => {
+    setActiveTab(value);
+    emailMutation.reset();
+    passwordMutation.reset();
+  };
+
+  const handleEmailChange = (event) => {
+    emailMutation.reset();
+    setEmail(event.target.value);
   };
 
   const handleEmailSubmit = (event) => {
     event.preventDefault();
 
+    const newEmail = email.trim();
+    const currentEmail = profile?.email?.trim();
+
+    if (!newEmail || newEmail.toLowerCase() === currentEmail?.toLowerCase()) {
+      return;
+    }
+
     emailMutation.mutate(
-      {
-        NewEmail: email.trim(),
-      },
+      { NewEmail: newEmail },
       {
         onSuccess: async () => {
           setEmail("");
           await onProfileUpdated?.();
         },
-      }
+      },
     );
   };
 
@@ -112,25 +128,100 @@ export default function ProfileSettings({ onProfileUpdated }) {
     }));
   };
 
+  const togglePasswordVisibility = (field) => {
+    setVisiblePasswords((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
   const handlePasswordSubmit = (event) => {
     event.preventDefault();
 
-    if (
-      passwords.newPassword !== passwords.confirmNewPassword
-    ) {
+    if (passwords.newPassword !== passwords.confirmNewPassword) {
       return;
     }
 
-    passwordMutation.mutate({
-      CurrentPassword: passwords.currentPassword,
-      NewPassword: passwords.newPassword,
-      ConfirmNewPassword: passwords.confirmNewPassword,
-    });
+    passwordMutation.mutate(
+      {
+        CurrentPassword: passwords.currentPassword,
+        NewPassword: passwords.newPassword,
+        ConfirmNewPassword: passwords.confirmNewPassword,
+      },
+      {
+        onSuccess: () => {
+          setPasswords({
+            currentPassword: "",
+            newPassword: "",
+            confirmNewPassword: "",
+          });
+
+          setVisiblePasswords({
+            currentPassword: false,
+            newPassword: false,
+            confirmNewPassword: false,
+          });
+        },
+      },
+    );
+  };
+
+  const passwordMismatch =
+    Boolean(passwords.confirmNewPassword) &&
+    passwords.newPassword !== passwords.confirmNewPassword;
+
+  const sameEmail =
+    Boolean(email.trim()) &&
+    email.trim().toLowerCase() === profile?.email?.trim().toLowerCase();
+
+  const PasswordField = ({ field, label, autoComplete, error = false, helperText = "" }) => (
+    <TextField
+      type={visiblePasswords[field] ? "text" : "password"}
+      label={label}
+      value={passwords[field]}
+      onChange={handlePasswordChange(field)}
+      required
+      fullWidth
+      autoComplete={autoComplete}
+      error={error}
+      helperText={helperText}
+      sx={textFieldSx}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <LockOutlined sx={{ color: iconColor }} />
+          </InputAdornment>
+        ),
+        endAdornment: (
+          <InputAdornment position="end">
+            <IconButton
+              edge="end"
+              onClick={() => togglePasswordVisibility(field)}
+              sx={visibilityButtonSx}
+              aria-label={`Toggle ${label.toLowerCase()} visibility`}
+            >
+              {visiblePasswords[field] ? (
+                <VisibilityOff fontSize="small" />
+              ) : (
+                <Visibility fontSize="small" />
+              )}
+            </IconButton>
+          </InputAdornment>
+        ),
+      }}
+    />
+  );
+
+  PasswordField.propTypes = {
+    field: PropTypes.string.isRequired,
+    label: PropTypes.string.isRequired,
+    autoComplete: PropTypes.string.isRequired,
+    error: PropTypes.bool,
+    helperText: PropTypes.string,
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-6">
       <div>
         <Typography
           variant="h6"
@@ -138,9 +229,7 @@ export default function ProfileSettings({ onProfileUpdated }) {
             isDark ? "text-slate-100" : "text-zinc-900"
           }`}
         >
-          {t("profile.settings.title", {
-            defaultValue: "Settings",
-          })}
+          Settings
         </Typography>
 
         <Typography
@@ -149,367 +238,309 @@ export default function ProfileSettings({ onProfileUpdated }) {
             isDark ? "text-slate-400" : "text-zinc-500"
           }`}
         >
-          {t("profile.settings.description", {
-            defaultValue:
-              "Manage your email address and password",
-          })}
+          Manage your account security and preferences.
         </Typography>
       </div>
 
-      {/* Change Email */}
-      <div className="space-y-4">
-        <div>
-          <Typography
-            variant="subtitle1"
-            className={`font-bold ${
-              isDark ? "text-slate-100" : "text-zinc-900"
-            }`}
-          >
-            {t("profile.settings.changeEmail", {
-              defaultValue: "Change Email",
-            })}
-          </Typography>
-
-          <Typography
-            variant="body2"
-            className={`mt-1 ${
-              isDark ? "text-slate-400" : "text-zinc-500"
-            }`}
-          >
-            Enter your new email address.
-          </Typography>
-        </div>
-
-        {emailMutation.isSuccess && (
-          <Alert
-            severity="success"
-            onClose={() => emailMutation.reset()}
-          >
-            Email changed successfully.
-          </Alert>
-        )}
-
-        {emailMutation.isError && (
-          <Alert
-            severity="error"
-            onClose={() => emailMutation.reset()}
-          >
-            {getErrorMessage(
-              emailMutation.error,
-              "Failed to change email."
-            )}
-          </Alert>
-        )}
-
-        <form
-          onSubmit={handleEmailSubmit}
-          className="flex flex-col gap-3 sm:flex-row sm:items-start"
-        >
-          <TextField
-            type="email"
-            label="New Email"
-            value={email}
-            onChange={(event) => {
-              emailMutation.reset();
-              setEmail(event.target.value);
-            }}
-            required
-            fullWidth
-            sx={textFieldSx}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailOutlined
-                    sx={{
-                      color: isDark ? "#64748b" : "#71717a",
-                    }}
-                  />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={emailMutation.isPending}
-            sx={{
-              minWidth: 130,
-              height: 56,
-              borderRadius: "10px",
-              backgroundColor: PRIMARY_COLOR,
-              textTransform: "none",
-              fontWeight: 700,
-              boxShadow: "none",
-
-              "&:hover": {
-                backgroundColor: "#c53d3d",
-                boxShadow: "none",
-              },
-            }}
-          >
-            {emailMutation.isPending ? (
-              <CircularProgress
-                size={20}
-                sx={{ color: "#fff" }}
-              />
-            ) : (
-              "Update Email"
-            )}
-          </Button>
-        </form>
-      </div>
-
-      <Divider
+      <Box
         sx={{
+          borderBottom: 1,
           borderColor: isDark ? "#334155" : "#e4e4e7",
         }}
-      />
+      >
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          variant="fullWidth"
+          sx={{
+            minHeight: 52,
+            "& .MuiTab-root": {
+              textTransform: "none",
+              fontWeight: 700,
+              color: isDark ? "#94a3b8" : "#71717a",
+              minHeight: 52,
+              fontSize: {
+                xs: "0.8rem",
+                sm: "0.9rem",
+              },
+            },
+            "& .Mui-selected": {
+              color: `${PRIMARY_COLOR} !important`,
+            },
+            "& .MuiTabs-indicator": {
+              backgroundColor: PRIMARY_COLOR,
+              height: 3,
+              borderRadius: "3px 3px 0 0",
+            },
+          }}
+        >
+          <Tab
+            icon={<EmailOutlined fontSize="small" />}
+            iconPosition="start"
+            label="Email"
+          />
+          <Tab
+            icon={<LockOutlined fontSize="small" />}
+            iconPosition="start"
+            label="Password"
+          />
+        </Tabs>
+      </Box>
 
-      {/* Change Password */}
-      <div className="space-y-4">
-        <div>
-          <Typography
-            variant="subtitle1"
-            className={`font-bold ${
-              isDark ? "text-slate-100" : "text-zinc-900"
+      {activeTab === 0 && (
+        <div className="space-y-5">
+          <div>
+            <Typography
+              variant="subtitle1"
+              className={`font-bold ${
+                isDark ? "text-slate-100" : "text-zinc-900"
+              }`}
+            >
+              Change Email Address
+            </Typography>
+
+            <Typography
+              variant="body2"
+              className={`mt-1 ${
+                isDark ? "text-slate-400" : "text-zinc-500"
+              }`}
+            >
+              Update the email address associated with your account.
+            </Typography>
+          </div>
+
+          <div
+            className={`rounded-xl border p-4 ${
+              isDark
+                ? "border-slate-700 bg-slate-800/50"
+                : "border-zinc-200 bg-zinc-50/70"
             }`}
           >
-            {t("profile.settings.changePassword", {
-              defaultValue: "Change Password",
-            })}
-          </Typography>
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                  isDark ? "bg-slate-700/70" : "bg-white"
+                }`}
+              >
+                <EmailOutlined
+                  sx={{
+                    color: PRIMARY_COLOR,
+                    fontSize: 21,
+                  }}
+                />
+              </div>
 
-          <Typography
-            variant="body2"
-            className={`mt-1 ${
-              isDark ? "text-slate-400" : "text-zinc-500"
-            }`}
-          >
-            Make sure your new password is secure.
-          </Typography>
+              <div className="min-w-0">
+                <Typography
+                  variant="caption"
+                  className={`block font-medium ${
+                    isDark ? "text-slate-400" : "text-zinc-500"
+                  }`}
+                >
+                  Current Email
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  className={`mt-0.5 break-all font-semibold ${
+                    isDark ? "text-slate-100" : "text-zinc-900"
+                  }`}
+                >
+                  {profile?.email || "—"}
+                </Typography>
+              </div>
+            </div>
+          </div>
+
+          {emailMutation.isSuccess && (
+            <Alert severity="success" onClose={() => emailMutation.reset()}>
+              Email changed successfully.
+            </Alert>
+          )}
+
+          {emailMutation.isError && (
+            <Alert severity="error" onClose={() => emailMutation.reset()}>
+              {getErrorMessage(
+                emailMutation.error,
+                "Failed to change email.",
+              )}
+            </Alert>
+          )}
+
+          {sameEmail && (
+            <Alert severity="info">
+              This is already your current email address.
+            </Alert>
+          )}
+
+          <form onSubmit={handleEmailSubmit} className="space-y-4">
+            <TextField
+              type="email"
+              label="New Email Address"
+              placeholder="example@email.com"
+              value={email}
+              onChange={handleEmailChange}
+              required
+              fullWidth
+              autoComplete="email"
+              sx={textFieldSx}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailOutlined sx={{ color: iconColor }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={
+                emailMutation.isPending ||
+                !email.trim() ||
+                sameEmail
+              }
+              sx={{
+                borderRadius: "10px",
+                backgroundColor: PRIMARY_COLOR,
+                textTransform: "none",
+                fontWeight: 700,
+                px: 3,
+                minHeight: 44,
+                boxShadow: "none",
+                "&:hover": {
+                  backgroundColor: "#c53d3d",
+                  boxShadow: "none",
+                },
+              }}
+            >
+              {emailMutation.isPending ? (
+                <span className="flex items-center gap-2">
+                  <CircularProgress size={18} sx={{ color: "#fff" }} />
+                  Updating...
+                </span>
+              ) : (
+                "Update Email"
+              )}
+            </Button>
+          </form>
         </div>
+      )}
 
-        {passwordMutation.isSuccess && (
-          <Alert
-            severity="success"
-            onClose={() => passwordMutation.reset()}
-          >
-            Password changed successfully.
-          </Alert>
-        )}
+      {activeTab === 1 && (
+        <div className="space-y-5">
+          <div>
+            <Typography
+              variant="subtitle1"
+              className={`font-bold ${
+                isDark ? "text-slate-100" : "text-zinc-900"
+              }`}
+            >
+              Change Password
+            </Typography>
 
-        {passwordMutation.isError && (
-          <Alert
-            severity="error"
-            onClose={() => passwordMutation.reset()}
-          >
-            {getErrorMessage(
-              passwordMutation.error,
-              "Failed to change password."
-            )}
-          </Alert>
-        )}
+            <Typography
+              variant="body2"
+              className={`mt-1 ${
+                isDark ? "text-slate-400" : "text-zinc-500"
+              }`}
+            >
+              Choose a strong password to keep your account secure.
+            </Typography>
+          </div>
 
-        {passwords.newPassword &&
-          passwords.confirmNewPassword &&
-          passwords.newPassword !==
-            passwords.confirmNewPassword && (
+          {passwordMutation.isSuccess && (
+            <Alert severity="success" onClose={() => passwordMutation.reset()}>
+              Password changed successfully.
+            </Alert>
+          )}
+
+          {passwordMutation.isError && (
+            <Alert severity="error" onClose={() => passwordMutation.reset()}>
+              {getErrorMessage(
+                passwordMutation.error,
+                "Failed to change password.",
+              )}
+            </Alert>
+          )}
+
+          {passwordMismatch && (
             <Alert severity="warning">
               New password and confirmation do not match.
             </Alert>
           )}
 
-        <form
-          onSubmit={handlePasswordSubmit}
-          className="space-y-4"
-        >
-          <TextField
-            type={showCurrent ? "text" : "password"}
-            label="Current Password"
-            value={passwords.currentPassword}
-            onChange={handlePasswordChange(
-              "currentPassword"
-            )}
-            required
-            fullWidth
-            sx={textFieldSx}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlined
-                    sx={{
-                      color: isDark ? "#64748b" : "#71717a",
-                    }}
-                  />
-                </InputAdornment>
-              ),
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <PasswordField
+              field="currentPassword"
+              label="Current Password"
+              autoComplete="current-password"
+            />
 
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Button
-                    type="button"
-                    onClick={() =>
-                      setShowCurrent((prev) => !prev)
-                    }
-                    sx={{
-                      minWidth: 0,
-                      color: isDark ? "#94a3b8" : "#71717a",
-                    }}
-                  >
-                    {showCurrent ? (
-                      <VisibilityOff fontSize="small" />
-                    ) : (
-                      <Visibility fontSize="small" />
-                    )}
-                  </Button>
-                </InputAdornment>
-              ),
-            }}
-          />
+            <PasswordField
+              field="newPassword"
+              label="New Password"
+              autoComplete="new-password"
+            />
 
-          <TextField
-            type={showNew ? "text" : "password"}
-            label="New Password"
-            value={passwords.newPassword}
-            onChange={handlePasswordChange("newPassword")}
-            required
-            fullWidth
-            sx={textFieldSx}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlined
-                    sx={{
-                      color: isDark ? "#64748b" : "#71717a",
-                    }}
-                  />
-                </InputAdornment>
-              ),
+            <PasswordField
+              field="confirmNewPassword"
+              label="Confirm New Password"
+              autoComplete="new-password"
+              error={passwordMismatch}
+              helperText={passwordMismatch ? "Passwords do not match" : ""}
+            />
 
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Button
-                    type="button"
-                    onClick={() =>
-                      setShowNew((prev) => !prev)
-                    }
-                    sx={{
-                      minWidth: 0,
-                      color: isDark ? "#94a3b8" : "#71717a",
-                    }}
-                  >
-                    {showNew ? (
-                      <VisibilityOff fontSize="small" />
-                    ) : (
-                      <Visibility fontSize="small" />
-                    )}
-                  </Button>
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <TextField
-            type={showConfirm ? "text" : "password"}
-            label="Confirm New Password"
-            value={passwords.confirmNewPassword}
-            onChange={handlePasswordChange(
-              "confirmNewPassword"
-            )}
-            required
-            fullWidth
-            sx={textFieldSx}
-            error={
-              Boolean(passwords.confirmNewPassword) &&
-              passwords.newPassword !==
-                passwords.confirmNewPassword
-            }
-            helperText={
-              passwords.confirmNewPassword &&
-              passwords.newPassword !==
-                passwords.confirmNewPassword
-                ? "Passwords do not match"
-                : ""
-            }
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlined
-                    sx={{
-                      color: isDark ? "#64748b" : "#71717a",
-                    }}
-                  />
-                </InputAdornment>
-              ),
-
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Button
-                    type="button"
-                    onClick={() =>
-                      setShowConfirm((prev) => !prev)
-                    }
-                    sx={{
-                      minWidth: 0,
-                      color: isDark ? "#94a3b8" : "#71717a",
-                    }}
-                  >
-                    {showConfirm ? (
-                      <VisibilityOff fontSize="small" />
-                    ) : (
-                      <Visibility fontSize="small" />
-                    )}
-                  </Button>
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={
-              passwordMutation.isPending ||
-              passwords.newPassword !==
-                passwords.confirmNewPassword
-            }
-            sx={{
-              borderRadius: "10px",
-              backgroundColor: "#091E27",
-              textTransform: "none",
-              fontWeight: 700,
-              px: 3,
-              boxShadow: "none",
-
-              "&:hover": {
-                backgroundColor: "#0f2d3a",
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={
+                passwordMutation.isPending ||
+                !passwords.currentPassword ||
+                !passwords.newPassword ||
+                !passwords.confirmNewPassword ||
+                passwordMismatch
+              }
+              sx={{
+                borderRadius: "10px",
+                backgroundColor: "#091E27",
+                textTransform: "none",
+                fontWeight: 700,
+                px: 3,
+                minHeight: 44,
                 boxShadow: "none",
-              },
-            }}
-          >
-            {passwordMutation.isPending ? (
-              <span className="flex items-center gap-2">
-                <CircularProgress
-                  size={18}
-                  sx={{ color: "#fff" }}
-                />
-                Updating...
-              </span>
-            ) : (
-              "Update Password"
-            )}
-          </Button>
-        </form>
-      </div>
+                "&:hover": {
+                  backgroundColor: "#0f2d3a",
+                  boxShadow: "none",
+                },
+              }}
+            >
+              {passwordMutation.isPending ? (
+                <span className="flex items-center gap-2">
+                  <CircularProgress size={18} sx={{ color: "#fff" }} />
+                  Updating...
+                </span>
+              ) : (
+                "Update Password"
+              )}
+            </Button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
 
 ProfileSettings.propTypes = {
+  profile: PropTypes.shape({
+    email: PropTypes.string,
+  }),
   onProfileUpdated: PropTypes.func,
 };
 
 ProfileSettings.defaultProps = {
+  profile: null,
   onProfileUpdated: undefined,
 };
+

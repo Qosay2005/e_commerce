@@ -1,6 +1,4 @@
-
 import React, { useEffect, useState } from "react";
-
 import {
   Alert,
   Button,
@@ -19,14 +17,15 @@ import {
 
 import { useTranslation } from "react-i18next";
 import PropTypes from "prop-types";
-
 import { useUpdateProfile } from "../../hocks/useProfile";
 import useThemeStore from "../../hocks/useThemeStore";
+
+const PRIMARY_COLOR = "#DB4444";
 
 function ProfileField({ label, value, icon: Icon, isDark }) {
   return (
     <div
-      className={`rounded-xl border p-4 ${
+      className={`rounded-xl border p-4 transition-colors ${
         isDark
           ? "border-slate-700 bg-slate-800/50"
           : "border-zinc-200 bg-zinc-50/70"
@@ -72,6 +71,10 @@ ProfileField.propTypes = {
   isDark: PropTypes.bool.isRequired,
 };
 
+ProfileField.defaultProps = {
+  value: "",
+};
+
 export default function ProfileInfo({
   profile,
   isRefreshing,
@@ -93,23 +96,20 @@ export default function ProfileInfo({
 
   const [isEditing, setIsEditing] = useState(false);
 
-  // البيانات التي سيتم تعديلها
   const [form, setForm] = useState({
     fullName: profile?.fullName || "",
-    phoneNumber: profile?.phoneNumber || "",
+    phone: profile?.phoneNumber || "",
   });
 
-  // تحديث الفورم عندما تصل بيانات جديدة من الـ API
   useEffect(() => {
     if (!isEditing) {
       setForm({
         fullName: profile?.fullName || "",
-        phoneNumber: profile?.phoneNumber || "",
+        phone: profile?.phoneNumber || "",
       });
     }
   }, [profile?.fullName, profile?.phoneNumber, isEditing]);
 
-  // تغيير أي حقل داخل الفورم
   const handleChange = (field) => (event) => {
     reset();
 
@@ -119,59 +119,52 @@ export default function ProfileInfo({
     }));
   };
 
-  // الدخول إلى وضع التعديل
   const handleEdit = () => {
     reset();
 
     setForm({
       fullName: profile?.fullName || "",
-      phoneNumber: profile?.phoneNumber || "",
+      phone: profile?.phoneNumber || "",
     });
 
     setIsEditing(true);
   };
 
-  // إلغاء التعديل وإرجاع القيم الأصلية
   const handleCancel = () => {
     reset();
 
     setForm({
       fullName: profile?.fullName || "",
-      phoneNumber: profile?.phoneNumber || "",
+      phone: profile?.phoneNumber || "",
     });
 
     setIsEditing(false);
   };
 
-  // حفظ التعديلات
   const handleSubmit = (event) => {
     event.preventDefault();
 
     updateProfile(
       {
         fullName: form.fullName.trim(),
-        phoneNumber: form.phoneNumber.trim(),
+        phoneNumber: form.phone.trim(),
       },
       {
         onSuccess: async () => {
-          // جلب البيانات الجديدة من السيرفر
           await onProfileUpdated?.();
-
-          // الخروج من وضع التعديل
           setIsEditing(false);
         },
       },
     );
   };
 
-  // تصميم حقول الإدخال
   const textFieldSx = {
     "& .MuiInputLabel-root": {
       color: isDark ? "#94a3b8" : "#71717a",
     },
 
     "& .MuiInputLabel-root.Mui-focused": {
-      color: "#DB4444",
+      color: PRIMARY_COLOR,
     },
 
     "& .MuiOutlinedInput-root": {
@@ -184,18 +177,18 @@ export default function ProfileInfo({
       },
 
       "&:hover fieldset": {
-        borderColor: "#DB4444",
+        borderColor: PRIMARY_COLOR,
       },
 
       "&.Mui-focused fieldset": {
-        borderColor: "#DB4444",
+        borderColor: PRIMARY_COLOR,
       },
     },
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <Typography
@@ -211,9 +204,7 @@ export default function ProfileInfo({
 
           <Typography
             variant="body2"
-            className={`mt-1 ${
-              isDark ? "text-slate-400" : "text-zinc-500"
-            }`}
+            className={`mt-1 ${isDark ? "text-slate-400" : "text-zinc-500"}`}
           >
             {t("profile.info.description", {
               defaultValue: "View and manage your personal information",
@@ -235,28 +226,22 @@ export default function ProfileInfo({
               fontWeight: 700,
 
               "&:hover": {
-                borderColor: "#DB4444",
-                color: "#DB4444",
+                borderColor: PRIMARY_COLOR,
+                color: PRIMARY_COLOR,
               },
             }}
           >
-            {t("profile.info.editProfile", {
-              defaultValue: "Edit Profile",
-            })}
+            Edit Profile
           </Button>
         )}
       </div>
 
-      {/* Success Message */}
       {isSuccess && !isEditing && (
         <Alert severity="success" onClose={reset}>
-          {t("profile.info.changesSaved", {
-            defaultValue: "Changes saved successfully",
-          })}
+          Changes saved successfully.
         </Alert>
       )}
 
-      {/* Error Message */}
       {isError && (
         <Alert severity="error" onClose={reset}>
           {error?.response?.data?.message ||
@@ -266,15 +251,11 @@ export default function ProfileInfo({
         </Alert>
       )}
 
-      {/* Edit Mode */}
       {isEditing ? (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
-            {/* Full Name */}
             <TextField
-              label={t("profile.info.fullName", {
-                defaultValue: "Full Name",
-              })}
+              label="Full Name"
               value={form.fullName}
               onChange={handleChange("fullName")}
               fullWidth
@@ -293,13 +274,10 @@ export default function ProfileInfo({
               sx={textFieldSx}
             />
 
-            {/* Phone Number */}
             <TextField
-              label={t("profile.info.phone", {
-                defaultValue: "Phone Number",
-              })}
-              value={form.phoneNumber}
-              onChange={handleChange("phoneNumber")}
+              label="Phone Number"
+              value={form.phone}
+              onChange={handleChange("phone")}
               fullWidth
               InputProps={{
                 startAdornment: (
@@ -316,15 +294,14 @@ export default function ProfileInfo({
             />
           </div>
 
-          <div className="flex gap-3">
-            {/* Save */}
+          <div className="flex flex-wrap gap-3">
             <Button
               type="submit"
               variant="contained"
               disabled={isPending || isRefreshing}
               sx={{
                 borderRadius: "10px",
-                backgroundColor: "#DB4444",
+                backgroundColor: PRIMARY_COLOR,
                 textTransform: "none",
                 fontWeight: 700,
                 px: 3,
@@ -342,13 +319,10 @@ export default function ProfileInfo({
                   Saving...
                 </span>
               ) : (
-                t("profile.info.saveChanges", {
-                  defaultValue: "Save Changes",
-                })
+                "Save Changes"
               )}
             </Button>
 
-            {/* Cancel */}
             <Button
               type="button"
               variant="outlined"
@@ -362,44 +336,33 @@ export default function ProfileInfo({
                 fontWeight: 700,
               }}
             >
-              {t("profile.info.cancel", {
-                defaultValue: "Cancel",
-              })}
+              Cancel
             </Button>
           </div>
         </form>
       ) : (
-        /* Information Mode */
+        /* Information */
         <div
           className={`grid gap-4 sm:grid-cols-2 ${
             isRefreshing ? "opacity-70" : ""
           }`}
         >
-          {/* Name */}
           <ProfileField
-            label={t("profile.info.fullName", {
-              defaultValue: "Full Name",
-            })}
+            label="Full Name"
             value={profile?.fullName}
             icon={PersonOutlineOutlined}
             isDark={isDark}
           />
 
-          {/* Email - للعرض فقط، تعديله من Settings */}
           <ProfileField
-            label={t("profile.info.email", {
-              defaultValue: "Email",
-            })}
+            label="Email"
             value={profile?.email}
             icon={EmailOutlined}
             isDark={isDark}
           />
 
-          {/* Phone */}
           <ProfileField
-            label={t("profile.info.phone", {
-              defaultValue: "Phone Number",
-            })}
+            label="Phone Number"
             value={profile?.phoneNumber}
             icon={PhoneOutlined}
             isDark={isDark}
@@ -415,14 +378,13 @@ ProfileInfo.propTypes = {
     fullName: PropTypes.string,
     email: PropTypes.string,
     phoneNumber: PropTypes.string,
-  }).isRequired,
-
+  }),
   isRefreshing: PropTypes.bool,
   onProfileUpdated: PropTypes.func,
 };
 
 ProfileInfo.defaultProps = {
+  profile: null,
   isRefreshing: false,
   onProfileUpdated: undefined,
 };
-
